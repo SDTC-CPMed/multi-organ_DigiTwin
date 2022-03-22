@@ -85,7 +85,7 @@ datasets_group = {'GSE32924_uninflamed 12 vs HC 8_AD.csv','GSE16161_Skin AD 9 vs
     'GSE11223_sigmoid colon_UC.csv','GSE179285_sigmoid colon_UC.csv','GSE11223_Uninflamed 66 vs HC 69_UC.csv','GSE179285_inactive 32 vs contol 31_UC.csv',...
     'GSE148810_childhood_onset_lupus_cSLE_skin.csv','GSE112943_kidney_lupus.csv','GSE112943_subacute cutaneous lupus.csv'};
 for z = 1 : length(AllDatasets.deg_file_name)
-    hv = readtable(join(['../data/UR_analysis/AllDEGfilesMovedToOneFolder/', AllDatasets.deg_file_name{z}]));
+    hv = readtable(join(['../data/AllDEGfilesMovedToOneFolder/', AllDatasets.deg_file_name{z}]));
     if sum(strcmp(AllDatasets.deg_file_name{z},{'GSE81071_DLE_vs_control.csv','GSE81071_SCLE_vs_control.csv','GSE95065_SSC_skin.csv'}))==1
         hv.Properties.VariableNames(strcmp(hv.Properties.VariableNames,'ENTREZ_GENE_ID'))={'Gene_ID'};
     end
