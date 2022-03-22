@@ -2,8 +2,8 @@
 %% read data GSE92415
 %URs = readtable('GSE92415/nonresponders_URs');
 %DEGs = readtable('GSE92415/GSE92415.untreatedNonResponder_vs_control_all_significant.csv');
-%URs = readtable('GSE92415/responders_URs');
-%DEGs = readtable('GSE92415/GSE92415.untreatedResponder_vs_control_all_significant.csv');
+URs = readtable('../data/GSE92415/responders_URs');
+DEGs = readtable('../data/GSE92415/GSE92415.untreatedResponder_vs_control_all_significant.csv');
 
 %% read data GSE73661
 %URs = readtable('GSE73661/nonresponders_URs');
