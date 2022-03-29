@@ -24,11 +24,20 @@ The quality of the data and removal of the outliers is done using sc_data_qualit
 
 ### Clustering and cell type identification
 
-### Differential expression analysis
+### Data normalization and Differential expression analysis
 
 /codes/scVI_v0.7.1.py
 
 ### Identification of cellular interactions and MCDM/MO-MCDM construction
+
+To identify cell-cell interactions, we used NicheNet (https://doi.org/10.1038/s41592-019-0667-5), a tool to model intercellular communications.
+
+To define the genes of interest for identification of the intercellular interactions, we used the lists of DEGs for each cell type in each organ. 
+The interactions were thus predicted, between each pair of cell types within each organ separetly. 
+All interactions between all different cell types were combined into a Multicellular Disease Model (MCDM), for each organ separetly. 
+Interactions were additionally identified between each cell type between different organs. These interactions were curated to only include those 
+through ligands secreated into the blood (explain detailed criteria). A Multi-organ MCDM (MO-MCDM) was then constructed including all interactions 
+between all the organs. 
 
 /codes/NicheNet_analysis.R
 
