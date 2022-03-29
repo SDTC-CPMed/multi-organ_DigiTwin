@@ -20,7 +20,7 @@
 
 ### Connective Pathway Analysis
 
-## meta analysis of 11 IMIDs
+## Meta analysis of 11 IMIDs
 
 ### Differential expression analysis
 
