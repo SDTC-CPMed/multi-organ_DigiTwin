@@ -4,6 +4,10 @@
 
 ## scRNA-seq analysis for construction of MCDMs, MO-MCDMs, and Connective Pathway Analysis
 
+The expected data inputs are five csv.gz tables (one per organ) with cells in columns and genes in rows. 
+
+The data can be found at ...
+
 ### Quality assessment and full matrix construction
 
 To ensure good quality data for downstream analyses, it is recommended to remove poor quality cells and genes from the analyses.
@@ -13,7 +17,7 @@ The good quaity genes kept were defined as those being identified in at least 1%
 
 Due to the risk of duplicates in the library resulting in two or more cells sharing a cell barcode, it is also recommend to remove outliers.
 Based on empirical evaluation of the distributionan overestimation of transcripts count over the cells, we removed all cells with; 
-Lung: >2000 transcripts; Spleen: >6000 transcripts; Muscle and Skin: >7000 transcripts; Joint: No outiers removed.
+Lung: >2000 transcripts; Spleen: >6000 transcripts; Muscle and Skin: >7000 transcripts; Joint: No outliers removed.
 
 The expected input is for this part is a matrix with genes in rows and cells in columns. 
 The quality of the data and removal of the outliers is done using sc_data_quality_sorting.R
