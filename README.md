@@ -10,6 +10,8 @@
 
 ### Differential expression analysis
 
+/codes/scVI_v0.7.1.py
+
 ### Identification of cellular interactions and MCDM/MO-MCDM construction
 
 ### Ranking of URs based on their downstream effect
