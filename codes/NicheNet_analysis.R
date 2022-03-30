@@ -2,31 +2,21 @@ rm(list=ls())
 library(nichenetr)
 library(dplyr)
 
-# samp <- 'cluster_ids_fromOleg'
 samp <- 'cluster_ids_fromOleg_06_29_CellType'
-# samp <- 'cluster_ids_fromOleg_06_29_CellTypeGuessed'
-species <- 'mouse'
+# species <- 'mouse'
 # ct <- 'cluster_ids_fromOleg.csv'
-ct <- 'cluster_ids_fromOleg_06_29.csv'
-# method = 'vanilla'
+# ct <- 'cluster_ids_fromOleg_06_29.csv'
+ct <- 'cluster_ids.csv'
 method = 'change'
 
 
 # define directories
 dir.home <- getwd()
-# dir.data <- paste(dir.home, '/results/allTissues_noBatchRemoval/scVI_out_0.5', sep = '')
-# dir.data <- paste(dir.home, '/results/allTissues_noBatchRemoval/scVI_out_1.5', sep = '')
-# dir.data <- paste(dir.home, '/results/allTissues_noBatchRemoval', sep = '')
 dir.data <- paste(dir.home, '/results/allTissues_tissue-sample-BatchRemoval', sep = '')
 dir.ct <- paste(dir.home, '/results/clusters_final_out', sep = '')
 dir.degs <- paste(dir.home, '/results/DEG_analysis/', samp, '/', method, '_mode/fdr_sorted', sep = '')
-# dir.out <- paste(dir.home, '/results/NicheNet_analysis/', samp, sep = '')
-# dir.orth <- paste(dir.home, '/results/orthologous_translation/', samp, sep = '')
 dir.out <- paste(dir.home, '/results/NicheNet_analysis/', samp, '/scVI_change', sep = '')
-# dir.out <- paste(dir.home, '/results/NicheNet_analysis/', samp, '/scVI_change/targets_fix_700', sep = '')
 dir.orth <- paste(dir.home, '/results/orthologous_translation/', samp, '/scVI_change', sep = '')
-# dir.out <- paste(dir.home, '/results/NicheNet_analysis/', samp, '/scVI_change_test', sep = '')
-# dir.orth <- paste(dir.home, '/results/orthologous_translation/', samp, '/scVI_change_test', sep = '')
 if (dir.exists(dir.out)==FALSE){
   dir.create(dir.out, recursive = T)
   print('dir.out was created')
@@ -39,25 +29,13 @@ if (dir.exists(dir.orth)==FALSE){
 
 # scVI adjusted scRNA-seq mouse data 
 data <- read.csv(paste(dir.data, "/normalized_expression_matrix.csv", sep = ''), row.names = 1)
-if (species == 'human'){
-  data <- as.matrix(data)
-}
 data <- t(data)
 data[1:5,1:5]
-# mode(data) <- "numeric"
 
 # Cell types
 cell_types <- as.matrix(read.csv(paste(dir.ct, ct, sep = '/')))
-# cell_types[,2] <- as.numeric(cell_types[,2])
 # remove any unused column. CellType_tissue must be in the fifth column
 head(cell_types)
-if (samp == 'cluster_ids_fromOleg_06_29_CellType'){
-  cell_types <- cell_types[,c(1:2,4:5)]
-} else if (samp == 'cluster_ids_fromOleg_06_29_CellTypeGuessed'){
-  cell_types <- cell_types[,c(1,3:5)]
-  colnames(cell_types)[2] <- 'CellType'
-}
-# add CellType_tissue to new column
 CellType_tissue <- as.vector(sub(' ', '_', paste(sub(' ', '-', cell_types[,'CellType']), cell_types[,'tissue'])))
 cell_types <- cbind(cell_types, CellType_tissue)
 remove(CellType_tissue)
@@ -73,81 +51,76 @@ ligand_target <- readRDS(url("https://zenodo.org/record/3260758/files/ligand_tar
 # Get ligand-receptor interactions
 lr_network = as.matrix(readRDS(url("https://zenodo.org/record/3260758/files/lr_network.rds")))
 
-# test
-# signaling = as.matrix(readRDS(url("https://zenodo.org/record/3260758/files/signaling_network.rds")))
-# gr_network = as.matrix(readRDS(url("https://zenodo.org/record/3260758/files/gr_network.rds")))
-
 # CONVERT GENES TO HUMAN ORTHOLOGS
 #########################################################################################################
-if (species == 'mouse'){
-  list_orthologs  <- function(mouse_gene_list, orth){
-    orth_sub = orth[which(orth$Mouse.gene.name %in% mouse_gene_list == TRUE),]
-    # human_gene_orthologs <- as.character(orth$Gene.name[which(orth$Mouse.gene.name %in% mouse_gene_list == TRUE)])
-    return(orth_sub)
-  }
-  find_orthologs_mouse_to_human  <- function(mouse_gene_list, orth){
-    human_gene_orthologs <- as.character(orth$Gene.name[which(orth$Mouse.gene.name %in% mouse_gene_list == TRUE)])
-    return(human_gene_orthologs)
-  }
-  # orth <- read.csv('/home/sanli71/fillager_OmikaHome/warefolder/data/Ensembl/GRCh38.p13.human_mouse_orthologs_ensembl_mart_export_200611.csv')
-  orth <- read.csv(paste(dir.home, '/Ensembl/GRCh38.p13.human_mouse_orthologs_ensembl_mart_export_200611.csv', sep = ''))
-  orth <- orth[,c('Gene.name', 'Mouse.gene.name')]
-  orth <- distinct(orth)
-  head(orth)
-  for (col in 1:length(colnames(degs))){
-    # col <- 8
-    mouse_gene_list <- degs[,col]
-    orth_x <- list_orthologs(mouse_gene_list, orth)
-    if (exists('orth_sub') == FALSE){
-      if (length(rownames(orth_x)) != 0){
-        orth_sub <- orth_x
-      }
-    } else {
-      if (length(rownames(orth_x)) != 0){
-        orth_sub <- rbind(orth_sub, list_orthologs(mouse_gene_list, orth))
-      }
+list_orthologs  <- function(mouse_gene_list, orth){
+  orth_sub = orth[which(orth$Mouse.gene.name %in% mouse_gene_list == TRUE),]
+  # human_gene_orthologs <- as.character(orth$Gene.name[which(orth$Mouse.gene.name %in% mouse_gene_list == TRUE)])
+  return(orth_sub)
+}
+find_orthologs_mouse_to_human  <- function(mouse_gene_list, orth){
+  human_gene_orthologs <- as.character(orth$Gene.name[which(orth$Mouse.gene.name %in% mouse_gene_list == TRUE)])
+  return(human_gene_orthologs)
+}
+# orth <- read.csv(paste(dir.home, '/Ensembl/GRCh38.p13.human_mouse_orthologs_ensembl_mart_export_200611.csv', sep = ''))
+orth <- read.table(paste(dir.home, '/results/orthologous_translation/cluster_ids_fromOleg_06_29_CellType/scVI_change/orthologous_translation_NicheNet_analysis.txt', sep = ''), header = T)
+orth <- orth[,c('Gene.name', 'Mouse.gene.name')]
+orth <- distinct(orth)
+head(orth)
+for (col in 1:length(colnames(degs))){
+  # col <- 8
+  mouse_gene_list <- degs[,col]
+  orth_x <- list_orthologs(mouse_gene_list, orth)
+  if (exists('orth_sub') == FALSE){
+    if (length(rownames(orth_x)) != 0){
+      orth_sub <- orth_x
     }
-    human_gene_orthologs <- unique(sort(find_orthologs_mouse_to_human(mouse_gene_list, orth)))
-    degs[,col] <- NA
-    if (length(human_gene_orthologs) != 0){
-      degs[1:length(human_gene_orthologs),col] <- human_gene_orthologs
+  } else {
+    if (length(rownames(orth_x)) != 0){
+      orth_sub <- rbind(orth_sub, list_orthologs(mouse_gene_list, orth))
     }
   }
-  # remove samples where no orthologous genes could be found
-  coln <- c()
-  for (i in 1:length(colnames(degs))){
-    if (length(unique(degs[,i])) == 1){
-      if (is.na(unique(degs[,i]))){
-        next
-      }
+  human_gene_orthologs <- unique(sort(find_orthologs_mouse_to_human(mouse_gene_list, orth)))
+  degs[,col] <- NA
+  if (length(human_gene_orthologs) != 0){
+    degs[1:length(human_gene_orthologs),col] <- human_gene_orthologs
+  }
+}
+# remove samples where no orthologous genes could be found
+coln <- c()
+for (i in 1:length(colnames(degs))){
+  if (length(unique(degs[,i])) == 1){
+    if (is.na(unique(degs[,i]))){
+      next
+    }
+  }
+  else {
+    coln <- c(coln, colnames(degs)[i])
+    if (exists('degs_x')){
+      degs_x <- cbind(degs_x, degs[,i])
     }
     else {
-      coln <- c(coln, colnames(degs)[i])
-      if (exists('degs_x')){
-        degs_x <- cbind(degs_x, degs[,i])
-      }
-      else {
-        degs_x <- degs[,i]
-      }
+      degs_x <- degs[,i]
     }
   }
-  colnames(degs_x) <- coln
-  degs <- degs_x
-  remove(degs_x)
-  # 
-  orth_sub <- distinct(orth_sub)
-  # data_backup <- data
-  # data <- data_backup
-  data <- as.data.frame(data)
-  data$'Mouse.gene.name' <- rownames(data)
-  data <- inner_join(data, orth)
-  data <- data[!duplicated(data$Gene.name),]
-  rownames(data) <- data$Gene.name
-  data$Gene.name <- NULL
-  data$Mouse.gene.name <- NULL
-  data <- as.matrix(data)
-  remove(orth, find_orthologs_mouse_to_human, coln)
 }
+colnames(degs_x) <- coln
+degs <- degs_x
+remove(degs_x)
+# 
+orth_sub <- distinct(orth_sub)
+# data_backup <- data
+# data <- data_backup
+data <- as.data.frame(data)
+data$'Mouse.gene.name' <- rownames(data)
+data <- inner_join(data, orth)
+data <- data[!duplicated(data$Gene.name),]
+rownames(data) <- data$Gene.name
+data$Gene.name <- NULL
+data$Mouse.gene.name <- NULL
+data <- as.matrix(data)
+remove(orth, find_orthologs_mouse_to_human, coln)
+
 write.table(orth_sub, paste(dir.orth, '/orthologous_translation_NicheNet_analysis.txt', sep = ''), sep = '\t', row.names = F)
 
 # ANALYSIS
