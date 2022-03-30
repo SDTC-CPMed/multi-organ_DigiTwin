@@ -41,7 +41,7 @@ between all the organs.
 
 As the NicheNet database consists of intercellular interactions in humans, the gene names were translated to their human orthologs. 
 The translation file used for our studies is provided in /data/orthologous_translation_file.txt. 
-To run this code on any other dataset, it is recommended to download the orthologs from Ensembl as described [here](#https://www.ensembl.info/2009/01/21/how-to-get-all-the-orthologous-genes-between-two-species/).
+To run this code on any other dataset, it is recommended to download the orthologs from Ensembl as described [here](https://www.ensembl.info/2009/01/21/how-to-get-all-the-orthologous-genes-between-two-species/).
 
 /codes/NicheNet_analysis.R
 
