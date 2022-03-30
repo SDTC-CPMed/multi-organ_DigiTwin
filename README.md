@@ -44,7 +44,7 @@ The input files to run NicheNet_analysis.R, are;
 * the normalized expression data. Output from [scVI_v0.7.1.py](#data-normalization-and-differential-expression-analysis)
 * the cell type identification file. Output from [cell type analysis script](#clustering-and-cell-type-identification)
 * a translation file of human orthologs
-* a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns. Output from [DEG_sort_significant.R](#clustering-and-cell-type-identification). 
+* a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns. Output from [DEG_sort_significant.R](#data-normalization-and-differential-expression-analysis). 
 
 **Add scripts and description for MCDM and MO-MCDM construction**
 
