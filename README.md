@@ -41,14 +41,19 @@ The translation file used for our studies is provided in /data/orthologous_trans
 To run this code on any other dataset, it is recommended to download the orthologs from Ensembl as described [here](https://www.ensembl.info/2009/01/21/how-to-get-all-the-orthologous-genes-between-two-species/).
 
 The input files to run NicheNet_analysis.R, are;  
-* the normalized expression data from [scVI](#data-normalization-and-differential-expression-analysis)
-* the cell type identification file from the [cell type analysis](#clustering-and-cell-type-identification)
+* the normalized expression data. Output from [scVI_v0.7.1.py](#data-normalization-and-differential-expression-analysis)
+* the cell type identification file. Output from [cell type analysis script](#clustering-and-cell-type-identification)
 * a translation file of human orthologs
-* a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns, as output from [DEG_sort_significant.R](#clustering-and-cell-type-identification). 
+* a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns. Output from [DEG_sort_significant.R](#clustering-and-cell-type-identification). 
+
+**Add scripts and description for MCDM and MO-MCDM construction**
 
 All interactions between all different cell types were combined into a Multicellular Disease Model (MCDM), for each organ separetly. 
+
 Interactions were additionally identified between each cell type between different organs. These interactions were curated to only include those 
-through ligands secreated into the blood (explain detailed criteria). A Multi-organ MCDM (MO-MCDM) was then constructed including all interactions 
+through ligands secreated into the blood (explain detailed criteria). 
+
+A Multi-organ MCDM (MO-MCDM) was then constructed including all interactions 
 between all the organs. 
 
 
