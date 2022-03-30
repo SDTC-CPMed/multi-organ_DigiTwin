@@ -30,7 +30,8 @@ The quality of the data and removal of the outliers is done using sc_data_qualit
 
 ### Identification of cellular interactions and MCDM/MO-MCDM construction
 
-To identify cell-cell interactions, we used [NicheNet](https://doi.org/10.1038/s41592-019-0667-5), a tool to model intercellular communications.
+To identify cell-cell interactions, we used NicheNet, a tool to model intercellular communications 
+developed by [Browaeys et al., 2020](https://doi.org/10.1038/s41592-019-0667-5), a tool to model intercellular communications.
 
 To define the genes of interest for identification of the intercellular interactions, we used the lists of DEGs for each cell type in each organ. 
 The interactions were thus predicted, between each pair of cell types within each organ separetly. 
