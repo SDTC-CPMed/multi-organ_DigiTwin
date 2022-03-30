@@ -2,30 +2,27 @@ rm(list=ls())
 library(nichenetr)
 library(dplyr)
 
-samp <- 'cluster_ids_fromOleg_06_29_CellType'
-# species <- 'mouse'
-# ct <- 'cluster_ids_fromOleg.csv'
-# ct <- 'cluster_ids_fromOleg_06_29.csv'
-ct <- 'cluster_ids.csv'
-method = 'change'
-
+ct <- 'cluster_ids.csv' # define cell type translation file
+orth <- 'orthologous_translation_file.txt' # define orthologus translation file
 
 # define directories
-dir.home <- getwd()
-dir.data <- paste(dir.home, '/results/allTissues_tissue-sample-BatchRemoval', sep = '')
-dir.ct <- paste(dir.home, '/results/clusters_final_out', sep = '')
-dir.degs <- paste(dir.home, '/results/DEG_analysis/', samp, '/', method, '_mode/fdr_sorted', sep = '')
-dir.out <- paste(dir.home, '/results/NicheNet_analysis/', samp, '/scVI_change', sep = '')
-dir.orth <- paste(dir.home, '/results/orthologous_translation/', samp, '/scVI_change', sep = '')
+# dir.home <- getwd()
+# samp <- 'cluster_ids_fromOleg_06_29_CellType'
+# method = 'change'
+# dir.data <- paste(dir.home, '/results/allTissues_tissue-sample-BatchRemoval', sep = '')
+# dir.ct <- paste(dir.home, '/results/clusters_final_out', sep = '')
+# dir.degs <- paste(dir.home, '/results/DEG_analysis/', samp, '/', method, '_mode/fdr_sorted', sep = '')
+# dir.out <- paste(dir.home, '/results/NicheNet_analysis/', samp, '/scVI_change', sep = '')
+# dir.orth <- paste(dir.home, '/results/orthologous_translation/', samp, '/scVI_change', sep = '')
+dir.data <- '../data/allTissues_tissue-sample-BatchRemoval'
+dir.ct <- '../data/clusters_final_out'
+dir.degs <- '../data/DEG_analysis/fdr_sorted'
+dir.orth <- 'data'
+dir.out <- '../data/NicheNet_analysis'
 if (dir.exists(dir.out)==FALSE){
   dir.create(dir.out, recursive = T)
   print('dir.out was created')
 }
-if (dir.exists(dir.orth)==FALSE){
-  dir.create(dir.orth, recursive = T)
-  print('dir.orth was created')
-}
-
 
 # scVI adjusted scRNA-seq mouse data 
 data <- read.csv(paste(dir.data, "/normalized_expression_matrix.csv", sep = ''), row.names = 1)
@@ -40,10 +37,12 @@ CellType_tissue <- as.vector(sub(' ', '_', paste(sub(' ', '-', cell_types[,'Cell
 cell_types <- cbind(cell_types, CellType_tissue)
 remove(CellType_tissue)
 
-
 # Get DEGs for cell types
 degs <- as.matrix(read.csv(paste(dir.degs, "/DEGs_Sick_vs_Healthy.csv", sep = '')))
 colnames(degs) <- gsub('\\.', '-', colnames(degs))
+
+# orthologous translation file
+orth <- read.table(paste(dir.orth, orth, sep = '/'), header = T)
 
 # Get ligand-target matrix
 ligand_target <- readRDS(url("https://zenodo.org/record/3260758/files/ligand_target_matrix.rds")) # targets = rows, ligands = columns
@@ -62,11 +61,11 @@ find_orthologs_mouse_to_human  <- function(mouse_gene_list, orth){
   human_gene_orthologs <- as.character(orth$Gene.name[which(orth$Mouse.gene.name %in% mouse_gene_list == TRUE)])
   return(human_gene_orthologs)
 }
-# orth <- read.csv(paste(dir.home, '/Ensembl/GRCh38.p13.human_mouse_orthologs_ensembl_mart_export_200611.csv', sep = ''))
-orth <- read.table(paste(dir.home, '/results/orthologous_translation/cluster_ids_fromOleg_06_29_CellType/scVI_change/orthologous_translation_NicheNet_analysis.txt', sep = ''), header = T)
+# Ensure that the orthologous file contains distinct human/mouse translations
 orth <- orth[,c('Gene.name', 'Mouse.gene.name')]
 orth <- distinct(orth)
 head(orth)
+# for each list of DEGs, translate to human orthologs
 for (col in 1:length(colnames(degs))){
   # col <- 8
   mouse_gene_list <- degs[,col]
@@ -107,10 +106,7 @@ for (i in 1:length(colnames(degs))){
 colnames(degs_x) <- coln
 degs <- degs_x
 remove(degs_x)
-# 
-orth_sub <- distinct(orth_sub)
-# data_backup <- data
-# data <- data_backup
+# translate gene names in normalized data-file to human ortologs
 data <- as.data.frame(data)
 data$'Mouse.gene.name' <- rownames(data)
 data <- inner_join(data, orth)
@@ -119,9 +115,8 @@ rownames(data) <- data$Gene.name
 data$Gene.name <- NULL
 data$Mouse.gene.name <- NULL
 data <- as.matrix(data)
-remove(orth, find_orthologs_mouse_to_human, coln)
+remove(orth, find_orthologs_mouse_to_human, list_orthologs, coln)
 
-write.table(orth_sub, paste(dir.orth, '/orthologous_translation_NicheNet_analysis.txt', sep = ''), sep = '\t', row.names = F)
 
 # ANALYSIS
 #########################################################################################################
@@ -249,25 +244,23 @@ predict_ligand_activities2 <- function (geneset, background_expressed_genes,liga
 Info<-list()
 counter=1
 
-# c <- unique(cell_types[,5])
-
-c <- unique(colnames(degs))
-all_exp_genes <- matrix(NA, nrow = nrow(data), ncol = length(c))
-# colnames(all_exp_genes) <- paste("Cluster_", c, sep="")
-colnames(all_exp_genes) <- c
-# s <- 10
+cc <- unique(colnames(degs))
+all_exp_genes <- matrix(NA, nrow = nrow(data), ncol = length(cc))
+# colnames(all_exp_genes) <- paste("Cluster_", cc, sep="")
+colnames(all_exp_genes) <- cc
+# s <- 1
 # t <- 24
 ntop_targets <- 250 # tested 700 as well, default == 250, last tested 600 did not work, 100o works
-for(s in 1:length(c)){
+for(s in 1:length(cc)){
   if(s == 1){
     rm(all_ligand_activity)
   }
   # sender cell type
-  s_cells <- cell_types[cell_types[,5]==c[s],1]
-  for(t in 1:length(c)){
-    print(paste(c[s], " to ", c[t], sep=""))
+  s_cells <- cell_types[cell_types[,5]==cc[s],1]
+  for(t in 1:length(cc)){
+    print(paste(cc[s], " to ", cc[t], sep=""))
     # target cell type
-    t_cells <- cell_types[cell_types[,5] == c[t],1]
+    t_cells <- cell_types[cell_types[,5] == cc[t],1]
     
     # NICHENET ANALYSIS
     # define expressed genes
@@ -282,8 +275,8 @@ for(s in 1:length(c)){
     which(s_cells %in% t_cells)
     exp_genes <- define_expressed_genes(data, s_cells, t_cells, exp_cutoff = 1e-5)
     # define interesting genes
-    int_genes <- genes_of_interest(sender_degs = degs[!is.na(degs[,colnames(degs) == c[s]]),colnames(degs) == c[s]],
-                                   target_degs = degs[!is.na(degs[,colnames(degs) == c[t]]),colnames(degs) == c[t]],
+    int_genes <- genes_of_interest(sender_degs = degs[!is.na(degs[,colnames(degs) == cc[s]]),colnames(degs) == cc[s]],
+                                   target_degs = degs[!is.na(degs[,colnames(degs) == cc[t]]),colnames(degs) == cc[t]],
                                    exp_genes)
     # identify ligand-receptor activity
     if(!all(is.na(int_genes[,1])) && !all(is.na(int_genes[,2]))){ # only analyse if cells express DEGs
@@ -306,20 +299,20 @@ for(s in 1:length(c)){
       
       strsplit(as.character(ligand_activity[1,5]), '/')
       
-      # write.table(ligand_activity$ranking, file = paste(dir.out, '/', c[s], "_to_", c[t], ".txt", sep=""),
+      # write.table(ligand_activity$ranking, file = paste(dir.out, '/', cc[s], "_to_", cc[t], ".txt", sep=""),
       #             sep="\t", col.names = T, row.names = F)
-      write.table(ligand_activity, file = paste(dir.out, '/', c[s], "_to_", c[t], ".txt", sep=""),
+      write.table(ligand_activity, file = paste(dir.out, '/', cc[s], "_to_", cc[t], ".txt", sep=""),
                   sep="\t", col.names = T, row.names = F)
 
       # comment below if predict_ligand_activities2
       if(!exists("all_ligand_activity")){
-        all_ligand_activity <- cbind(ligand_activity, rep(c[s], times = nrow(ligand_activity)), rep(c[t], times = nrow(ligand_activity)))
+        all_ligand_activity <- cbind(ligand_activity, rep(cc[s], times = nrow(ligand_activity)), rep(cc[t], times = nrow(ligand_activity)))
         colnames(all_ligand_activity) <- c(colnames(ligand_activity), "Sender", "Target")
       } else {
-        ligand_activity_x <- cbind(ligand_activity, rep(c[s], times = nrow(ligand_activity)), rep(c[t], times = nrow(ligand_activity)))
+        ligand_activity_x <- cbind(ligand_activity, rep(cc[s], times = nrow(ligand_activity)), rep(cc[t], times = nrow(ligand_activity)))
         colnames(ligand_activity_x) <- c(colnames(ligand_activity), "Sender", "Target")
-        # all_ligand_activity <- rbind(all_ligand_activity, cbind(ligand_activity_x, rep(c[s], times = nrow(ligand_activity_x)),
-        #                                                         rep(c[t], times = nrow(ligand_activity_x))))
+        # all_ligand_activity <- rbind(all_ligand_activity, cbind(ligand_activity_x, rep(cc[s], times = nrow(ligand_activity_x)),
+        #                                                         rep(cc[t], times = nrow(ligand_activity_x))))
         all_ligand_activity <- rbind(all_ligand_activity, ligand_activity_x)
       }
       # stop comment
@@ -340,144 +333,4 @@ for(s in 1:length(c)){
   
 }
 
-
-#now computing correlations per liggand over all cell types
-
-# # correlation ranking. 
-# # NOTE: int_genes created per loop in above script. This only calcluates for latest interaction pair now
-# PotentialLigands<-unique(int_genes[!is.na(int_genes[,1]),1])
-# nLig=length(PotentialLigands)
-# Correlations=numeric(nLig)
-# 
-# for (i in 1:nLig){
-#   liggand=PotentialLigands[[i]]
-#   rel=lapply(Info, function (x) x[[liggand]]$info)%>%bind_rows()
-#   Correlations[i]=cor(rel$response, rel$prediction)
-# }
-# 
-# #This is the table containing overall correlation rankings per ligand.
-# overall_corr_table=data.frame(ligand=PotentialLigands, corr=Correlations)
-
-# show histogram of ligand activity scores
-library(ggplot2)
-# ligand_activities <- as.data.frame(ligand_activity)
-ligand_activities <- as.data.frame(all_ligand_activity)
-ligand_activities$pearson <- as.numeric(as.character(ligand_activities$pearson))
-p_hist_lig_activity = ggplot(ligand_activities, aes(x=pearson)) + 
-  geom_histogram(color="black", fill="darkorange")  + 
-  # geom_density(alpha=.1, fill="orange") +
-  geom_vline(aes(xintercept=min(ligand_activities  %>% top_n(5000, pearson) %>% pull(pearson))), color="red", linetype="dashed", size=1) + 
-  labs(x="ligand activity (PCC)", y = "# ligands") +
-  theme_classic()
-p_hist_lig_activity
-p_hist_lig_activity = ggplot(ligand_activities, aes(x=pearson)) + 
-  geom_histogram(color="black", fill="darkorange")  + 
-  # geom_density(alpha=.1, fill="orange") +
-  geom_vline(aes(xintercept=min(ligand_activities  %>% top_n(5, pearson) %>% pull(pearson))), color="red", linetype="dashed", size=1) + 
-  labs(x="ligand activity (PCC)", y = "# ligands") +
-  theme_classic()
-p_hist_lig_activity
-
-# Identify the best upstream ligands
-best_upstream_ligands = ligand_activities %>% top_n(5000, pearson) %>% arrange(-pearson) %>% pull(test_ligand)
-best_upstream_ligands = ligand_activities %>% top_n(5, pearson) %>% arrange(-pearson) %>% pull(test_ligand)
-best_upstream_ligands_unique = as.character(unique(best_upstream_ligands))
-head(best_upstream_ligands_unique)
-length(best_upstream_ligands_unique)
-
-# Infer target genes of top ranked ligands
-# NOTE:
-# int_genes not correct as it only contains the genes of interest for one of the interactions
-# Redo: one analyses per interaction pair. Use best_upstream_ligands_unique which are present in interaction X and genes of interest for interaction X
-# Save the genes of interest for each interaction from the above analysis
-active_ligand_target_links_df = best_upstream_ligands_unique %>% lapply(get_weighted_ligand_target_links, geneset = int_genes, ligand_target_matrix = ligand_target, n = 250) %>% bind_rows()
-nrow(active_ligand_target_links_df)
-## [1] 1351
-head(active_ligand_target_links_df)
-
-# prepare for visualization
-active_ligand_target_links = prepare_ligand_target_visualization(ligand_target_df = active_ligand_target_links_df, ligand_target_matrix = ligand_target, cutoff = 0.25)
-nrow(active_ligand_target_links_df)
-head(active_ligand_target_links_df)
-
-# Visualize the ligand target activity
-order_ligands = intersect(best_upstream_ligands, colnames(active_ligand_target_links)) %>% rev()
-order_targets = active_ligand_target_links_df$target %>% unique()
-vis_ligand_target = active_ligand_target_links[order_targets,order_ligands] %>% t()
-
-p_ligand_target_network = vis_ligand_target %>% make_heatmap_ggplot("Prioritized CAF-ligands","p-EMT genes in malignant cells", color = "purple",legend_position = "top", x_axis_position = "top",legend_title = "Regulatory potential") + scale_fill_gradient2(low = "whitesmoke",  high = "purple", breaks = c(0,0.005,0.01)) + theme(axis.text.x = element_text(face = "italic"))
-
-p_ligand_target_network
-
-
-'
-# Overview - how many cell-cell interactions between cell X and cell Y
-for(i in 1:length(unique(all_ligand_activity[,5]))){
-if(i == 1){
-rm(overview_ligand_activity)
-}
-for(j in 1:length(unique(all_ligand_activity[,6]))){
-t_i <- unique(all_ligand_activity[,5])[i]
-t_j <- unique(all_ligand_activity[,6])[j]
-
-temp <- all_ligand_activity
-
-if(sum(temp[,5]== t_i)>1){
-temp <- temp[temp[,5]== t_i,]
-if(sum(temp[,6]== t_j)>1){
-temp <- temp[temp[,6]== t_j,]
-temp <- nrow(temp)
-} else {
-if(sum(temp[,6]== t_j)==1){
-temp <- 1
-} else {
-temp <- 0
-}
-}
-} else {
-if(sum(temp[,5]== t_i)==1){
-if(which(temp[,5]==t_i) %in% which(temp[,6] == t_j)){
-temp <- 1
-} else {
-temp <- 0
-}
-} else {
-temp <- 0
-}
-}
-
-if(!exists("overview_ligand_activity")){
-overview_ligand_activity <- matrix(c(t_i, t_j, temp), nrow = 1)
-colnames(overview_ligand_activity) <- c("Sender", "Target", "n_interactions")
-} else {
-overview_ligand_activity <- rbind(overview_ligand_activity, c(t_i, t_j, temp))
-}
-}
-}
-rm(t_i, t_j, i, j, temp)
-mode(overview_ligand_activity) <- "numeric"
-write.table(overview_ligand_activity, file = "Output/NicheNet/overview_interactions.txt", sep="\t", col.names = T, row.names = F)
-'
-
-
-# Used for choosing an arbitary threshold for when a gene is considered to be expressed in a given cell population
-# out <- foreach(i = seq(from = 0, to = 0.2, by = 0.01), .combine = "cbind") %do% {
-#   t_x <- vector()
-#   for(j in 0:max(as.numeric(cell_types[,2]))){
-#   # select cell population
-#   temp <- data[,colnames(data)%in%cell_types[as.numeric(cell_types[,2])==j,1]]
-#   # Criteria
-#   if(ncol(temp)>0){
-#   x <- rowMeans(temp>=i)
-#   # Print result
-#   t_x[j] <- length(x[x >= 0.1])
-#   } else {
-#   t_x[j] <- 0
-#   }
-#   }
-#   return(t_x)
-# }
-# rownames(out) <- paste("Cluster_", 0:(nrow(out)-1), sep="")
-# colnames(out) <- paste("Cutoff_", seq(from = 0, to = 0.2, by = 0.01), sep="")
-# out <- out[rownames(out)%in% colnames(degs),]
 
