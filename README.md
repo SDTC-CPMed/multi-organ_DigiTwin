@@ -46,11 +46,21 @@ The input files to run NicheNet_analysis.R, are;
 * a translation file of human orthologs
 * a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns. Output from [DEG_sort_significant.R](#data-normalization-and-differential-expression-analysis). 
 
-**Add description of output files**
+The code output one tab separated txt file per interacting cell type pair, within and between organs, 
+containing "test_ligand" (i.e upstream regulator of interaction), "auroc", "aupr", "pearson" (Pearson Correlation Coefficient, PCC), "target" (genes), and "target_weight" over the columns and interactions over rows. 
+
+Additionally, it creates one file containing all predicted interactions between each pair od cell types, all_ligand_activity.txt, 
+which apart from above mentioned columns contains "Sender" and "Target" cell type and organ (named: celltype_organ)
+
+To 
+
+Note: that the interactions between organs in these files are not yet curated only to include URs secreated in blood
 
 **Add scripts and description for MCDM and MO-MCDM construction**
 
 All interactions between all different cell types were combined into a Multicellular Disease Model (MCDM), for each organ separetly. 
+
+The PCC score indicate the strength of the predicted interactions and for further analyses we focused on inreractions with PCC > 0.
 
 Interactions were additionally identified between each cell type between different organs. These interactions were curated to only include those 
 through ligands secreated into the blood (explain detailed criteria). 

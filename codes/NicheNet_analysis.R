@@ -27,7 +27,7 @@ if (dir.exists(dir.out)==FALSE){
 # scVI adjusted scRNA-seq mouse data 
 data <- read.csv(paste(dir.data, "/normalized_expression_matrix.csv", sep = ''), row.names = 1)
 data <- t(data)
-data[1:5,1:5]
+# data[1:5,1:5]
 
 # Cell types
 cell_types <- as.matrix(read.csv(paste(dir.ct, ct, sep = '/')))
