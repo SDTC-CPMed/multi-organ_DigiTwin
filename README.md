@@ -46,6 +46,8 @@ The input files to run NicheNet_analysis.R, are;
 * a translation file of human orthologs
 * a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns. Output from [DEG_sort_significant.R](#data-normalization-and-differential-expression-analysis). 
 
+**Add description of output files**
+
 **Add scripts and description for MCDM and MO-MCDM construction**
 
 All interactions between all different cell types were combined into a Multicellular Disease Model (MCDM), for each organ separetly. 
