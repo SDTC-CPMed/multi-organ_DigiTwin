@@ -49,31 +49,28 @@ The input files to run NicheNet_analysis.R, are;
 The code output one tab separated txt file per interacting cell type pair, within and between organs, 
 containing "test_ligand" (i.e upstream regulator of interaction), "auroc", "aupr", "pearson" (Pearson Correlation Coefficient, PCC), "target" (genes), and "target_weight" over the columns and interactions over rows. 
 
-Additionally, it creates one file containing all predicted interactions between each pair od cell types, all_ligand_activity.txt, 
+Additionally, it creates one file containing all predicted interactions between each pair of cell types, all_ligand_activity.txt, 
 which apart from above mentioned columns contains "Sender" and "Target" cell type and organ (named: celltype_organ)
-
-To 
 
 Note: that the interactions between organs in these files are not yet curated only to include URs secreated in blood
 
-**Add scripts and description for MCDM and MO-MCDM construction**
+To curate the inter-organ interactions, only to include interactions through URs secreted in blood, 
+and to sort out the strongest interactions (PCC > 0) considered for further analyses
+we ran NicheNet_network_curation.R. As input to this script is the all_ligand_activity.txt output from NicheNet_analysis.R, 
+and a curation file (eg., data/IPA/curation/curation_file.txt) containing information about the cellular location of each UR. 
 
-All interactions between all different cell types were combined into a Multicellular Disease Model (MCDM), for each organ separetly. 
+The curation file can be retrieved from IPA by following [IPA - Generate curation file](#generate-curation-file)
 
-The PCC score indicate the strength of the predicted interactions and for further analyses we focused on inreractions with PCC > 0.
+It is important that the curation file contains two columns named "Symbol" (containing the gene names of the URs) and "Location" (containing information about cellular location). 
+The URs which will be kept for inter-organ interactions by the code are those with "Location" == "Extracellular Space". 
 
-Interactions were additionally identified between each cell type between different organs. These interactions were curated to only include those 
-through ligands secreated into the blood (explain detailed criteria). 
+The output from this script consists of one file containing all inter- and intra-organ interactions, all_pos_curated_ligand_activity.txt (Fig 1)
 
-A Multi-organ MCDM (MO-MCDM) was then constructed including all interactions 
-between all the organs. 
-
+<img src="temp/images/output_nichenet_network_curation.png" width="500" />
 
 ### Ranking of URs based on their downstream effect
 
 /codes/rank_by_targets_and_heatmap.R
-
-### Ingenuity Pathway Analysis for identification of enriched pathways
 
 ### Connective Pathway Analysis
 
@@ -82,3 +79,11 @@ between all the organs.
 ### Differential expression analysis
 
 ### ...
+
+## Ingenuity pathway analysis
+
+### Generate curation file
+
+### Pathway analysis
+
+### Prediction of upstream regulators (URs)
