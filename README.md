@@ -72,7 +72,7 @@ The output from this script consists of one file containing all inter- and intra
 
 Fig 1
 
-<img title="" alt="" src="temp/images/output_nichenet_network_curation.png">
+<img src="/temp/images/output_nichenet_network_curation.png">
 
 ### Ranking of URs based on their downstream effect
 
