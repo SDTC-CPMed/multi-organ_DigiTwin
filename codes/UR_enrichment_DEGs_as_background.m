@@ -161,6 +161,14 @@ AllDatasets.group(strcmp(AllDatasets.active_USE,'no'))={'Noninflamed'};
 AllDatasets.Properties.VariableNames(strcmp(AllDatasets.Properties.VariableNames,'DEG_genes'))={'DEG'};
 AllDatasets.Properties.VariableNames(strcmp(AllDatasets.Properties.VariableNames,'disease_short'))={'cell_dataset'};
 AllDatasets.key = cellfun(@(x,y) sprintf('%s***%s',x,y),AllDatasets.file_name,AllDatasets.group,'UniformOutput',0);
+
+broad_label = AllDatasets.broad_label;
+broad_label(10) = {'lupus_active'};
+broad_label(13) = {'lupus_active'};
+broad_label(18) = {'lupus_active'};
+broad_label(30) = {'lupus_active'};
+AllDatasets.broad_label = broad_label;
+
 Fn = AllDatasets(:,{'key','file_name','group','DEG', 'broad_label'});
 clearvars -except Fn savename AllDatasets gene_info
 
@@ -191,7 +199,7 @@ AllDatasets = AllDatasets(:,{'file_name','key','cell_dataset','tissue','gse','ac
 
 for z = 1 : length(AllDatasets.key)
     AllDatasets.UR{z}(AllDatasets.UR{z}.p_valueofoverlap>0.05,:)=[]; % I am using all to get an overview on ALL possible target genes of an UR
-    AllDatasets.UR{z}(~ismember(AllDatasets.UR{z}.upstreamregulator,AllDatasets.DEG{z}),:) =[]; %Check if it is also DEG
+    %AllDatasets.UR{z}(~ismember(AllDatasets.UR{z}.upstreamregulator,AllDatasets.DEG{z}),:) =[]; %Check if it is also DEG
     hv = [table(repmat(AllDatasets.file_name(z),length(AllDatasets.UR{z}.upstreamregulator),1),...
         repmat(AllDatasets.group(z),length(AllDatasets.UR{z}.upstreamregulator),1),'variablenames',{'file_name','group'}),...
         AllDatasets.UR{z}(:,{'upstreamregulator','targetmoleculesindataset'})];
@@ -365,11 +373,7 @@ CombinedPval  = table(repmat(CombinedOverInfandNoninf.rows_SPs,size(CombinedOver
                 reshape(squeeze(CombinedPval_Disease(:,:,13)),size(squeeze(CombinedPval_Disease(:,:,13)),1)*size(squeeze(CombinedPval_Disease(:,:,13)),2),1),...
                 reshape(squeeze(CombinedPval_Disease(:,:,14)),size(squeeze(CombinedPval_Disease(:,:,14)),1)*size(squeeze(CombinedPval_Disease(:,:,14)),2),1),...
                 reshape(squeeze(CombinedPval_Disease(:,:,15)),size(squeeze(CombinedPval_Disease(:,:,15)),1)*size(squeeze(CombinedPval_Disease(:,:,15)),2),1),...
-                reshape(squeeze(CombinedPval_Disease(:,:,16)),size(squeeze(CombinedPval_Disease(:,:,16)),1)*size(squeeze(CombinedPval_Disease(:,:,16)),2),1),...
-                reshape(squeeze(CombinedPval_Disease(:,:,17)),size(squeeze(CombinedPval_Disease(:,:,17)),1)*size(squeeze(CombinedPval_Disease(:,:,17)),2),1),...
-                reshape(squeeze(CombinedPval_Disease(:,:,18)),size(squeeze(CombinedPval_Disease(:,:,18)),1)*size(squeeze(CombinedPval_Disease(:,:,18)),2),1),...
-                reshape(squeeze(CombinedPval_Disease(:,:,19)),size(squeeze(CombinedPval_Disease(:,:,19)),1)*size(squeeze(CombinedPval_Disease(:,:,19)),2),1),...
-            'variablenames',{'SP','UR','CombinedP_Inflamed','CombinedP_Noninflamed', 'qval_Inflamed', 'qval_Noninflamed', 'count_Inflamed', 'count_Noninflamed','AD_active','AD_inactive','CD_active','CD_inactive','DLE_active','JM_active','JM_inactive','LN_active','PSO_active','PSO_inactive','RA_active','SCLE_active','SS_active','SSc_active','UC_active','UC_inactive','at_risk_T1D_inactive','cSLE_active','lupus_active'});
+                'variablenames',{'SP','UR','CombinedP_Inflamed','CombinedP_Noninflamed', 'qval_Inflamed', 'qval_Noninflamed', 'count_Inflamed', 'count_Noninflamed','AD_active','AD_inactive','CD_active','CD_inactive','JM_active','JM_inactive','PSO_active','PSO_inactive','RA_active','SS_active','SSc_active','UC_active','UC_inactive','at_risk_T1D_inactive','lupus_active'});
         
 
 
@@ -413,7 +417,7 @@ datasets_Noninf = squeeze(datasets_Noninf(7,:,:));
 for z = 1 : length(AllDatasets.key)
 
     AllDatasets.UR{z}(AllDatasets.UR{z}.p_valueofoverlap>0.05,:)=[]; % I am using all to get an overview on ALL possible target genes of an UR
-    AllDatasets.UR{z}(~ismember(AllDatasets.UR{z}.upstreamregulator,AllDatasets.DEG{z}),:) =[];
+    %AllDatasets.UR{z}(~ismember(AllDatasets.UR{z}.upstreamregulator,AllDatasets.DEG{z}),:) =[];
     z_scores = AllDatasets.UR{z}(:,1:2);
     %writetable(z_scores,sprintf(join(['../data/UR_analysis/z_scores/',string(AllDatasets.deg_file_name{z})]),savename))
         
