@@ -69,7 +69,10 @@ The URs which will be kept for inter-organ interactions by the code are those wi
 The output from this script consists of one file containing all inter- and intra-organ interactions, all_pos_curated_ligand_activity.txt (Fig 1)
 
 <img title="" alt="" src="temp/images/output_nichenet_network_curation.png" width="500" />
-<img title="" alt="" src="temp/images/output_nichenet_network_curation.png"/>
+
+Fig 1
+
+<img title="" alt="" src="temp/images/output_nichenet_network_curation.png">
 
 ### Ranking of URs based on their downstream effect
 
