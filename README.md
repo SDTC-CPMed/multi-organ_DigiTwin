@@ -26,8 +26,9 @@ The quality of the data and removal of the outliers is done using sc_data_qualit
 
 ### Data normalization and Differential expression analysis
 
-/codes/scVI_v0.7.1.py
-/codes/DEG_sort_significant.R
+scVI_v0.7.1.py
+
+DEG_sort_significant.R
 
 ### Identification of cellular interactions and MCDM/MO-MCDM construction
 
@@ -44,7 +45,8 @@ The input files to run NicheNet_analysis.R, are;
 * the normalized expression data. Output from [scVI_v0.7.1.py](#data-normalization-and-differential-expression-analysis)
 * the cell type identification file. Output from [cell type analysis script](#clustering-and-cell-type-identification)
 * a translation file of human orthologs
-* a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns. Output from [DEG_sort_significant.R](#data-normalization-and-differential-expression-analysis). 
+* a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns, 
+as output from the [differential expression analysis](#data-normalization-and-differential-expression-analysis), DEG_sort_significant.R. 
 
 The code output one tab separated txt file per interacting cell type pair, within and between organs, 
 containing "test_ligand" (i.e upstream regulator of interaction), "auroc", "aupr", "pearson" (Pearson Correlation Coefficient, PCC), "target" (genes), and "target_weight" over the columns and interactions over rows. 
@@ -66,7 +68,8 @@ The URs which will be kept for inter-organ interactions by the code are those wi
 
 The output from this script consists of one file containing all inter- and intra-organ interactions, all_pos_curated_ligand_activity.txt (Fig 1)
 
-<img src="temp/images/output_nichenet_network_curation.png" width="500" />
+<img title="" alt="" src="temp/images/output_nichenet_network_curation.png" width="500" />
+<img title="" alt="" src="temp/images/output_nichenet_network_curation.png"/>
 
 ### Ranking of URs based on their downstream effect
 
