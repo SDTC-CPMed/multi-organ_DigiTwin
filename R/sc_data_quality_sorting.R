@@ -10,24 +10,6 @@
 #'
 
 library(Seurat)
-# library(dplyr)
-# library(Matrix)
-# library(R.utils)
-# library(patchwork)
-
-
-# rm(list=ls())
-# dir.home <- getwd()
-# # dir.home <- '/data/sanli71/RA-CIA_project/CIA_project'
-# dir.home <- paste(dir.home, '/DGE_data/', sep = '')
-# dir.data <- dir.home
-# dir.out <- paste(dir.home, 'sorted_DGEs/', sep = '')
-# if (dir.exists(dir.out)==FALSE){
-#   dir.create(dir.out, recursive = T)
-#   print('dir.out was created')
-# }
-# files <- list.files(dir.data, pattern = 'txt.gz')
-# organs <- sapply(strsplit(files, '_'), '[[', 1)
 
 sc_data_quality_sorting <- function(filename, organ){
   # X <- read.table(paste(dir.data, list.files(dir.data, pattern = organ), sep = ''), header = T, sep = '\t', row.names = 1)
