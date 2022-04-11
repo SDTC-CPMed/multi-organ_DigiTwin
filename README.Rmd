@@ -32,11 +32,7 @@ The expected data input are five csv.gz matrices, one per organ, with cells over
 
 ```{r}
 ### Read data from GSE and save it to data/ 
-filenames = c("data/Joint_UMI_expression_matrix.txt.gz",
-              "data/Muscle_UMI_expression_matrix.txt.gz",
-              "data/Lung_UMI_expression_matrix.txt.gz",
-              "data/Skin_UMI_expression_matrix.txt.gz",
-              "data/Spleen_UMI_expression_matrix.txt.gz")
+filename = "data/UMI_expression_matrix.txt.gz"
 ```
 
 ## Quality assessment and full matrix construction
@@ -51,18 +47,9 @@ Based on empirical evaluation of the distribution an overestimation of transcrip
 
 The output file is saved in data/sorted_DEGs.
 
-```{r}
-
-```
-
-
 ```{r, eval=FALSE}
 source('R/sc_data_quality_sorting.R')
-sc_data_quality_sorting(filenames[1], organ = 'Joint')
-sc_data_quality_sorting(filenames[2], organ = 'Muscle')
-sc_data_quality_sorting(filenames[3], organ = 'Lung')
-sc_data_quality_sorting(filenames[4], organ = 'Skin')
-sc_data_quality_sorting(filenames[5], organ = 'Spleen')
+sc_data_quality_sorting(filename)
 ```
 
 
