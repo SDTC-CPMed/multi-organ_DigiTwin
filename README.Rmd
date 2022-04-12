@@ -26,6 +26,12 @@ if (dir.exists("data/sorted_DGEs")==FALSE){
 if (dir.exists("data/NicheNet_analysis_curated")==FALSE){
   dir.create("data/NicheNet_analysis_curated")
 }
+if (dir.exists("data/clustering_and_celltype_identification")==FALSE){
+  dir.create("data/clustering_and_celltype_identification")
+}
+if (dir.exists("data/scVI_normalized")==FALSE){
+  dir.create("data/scVI_normalized")
+}
 ```
 
 The expected data input are five csv.gz matrices, one per organ, with cells over columns and genes over rows.
@@ -35,7 +41,7 @@ The expected data input are five csv.gz matrices, one per organ, with cells over
 filename = "data/UMI_expression_matrix.txt.gz"
 ```
 
-## Quality assessment and full matrix construction
+## Quality assessment and sorting
 
 To ensure good quality data for downstream analyses, it is recommended to remove poor quality cells and genes from the analyses.
 We performed these analyses for all the organ combined. 
@@ -57,41 +63,40 @@ sc_data_quality_sorting(filename)
 
 ```{r}
 source("Python/ConvertReferencesSandra.ipynb")
+
 ```
 
-
-```{python}
-source
+```{bash}
+#module add anaconda3
+#source activate dca
+python3 Python/ConvertReferencesSandra.ipynb
+#source deactivate
 ```
 
 
 ### Data normalization and Differential expression analysis
 
+
+
 scVI_v0.7.1.py
-
-DEG_sort_significant.R
-
-```{r}
-
-```
 
 
 ```{bash}
-source activate /home/sanli71/.conda/envs/scvi
-
-# DEG analysis, sick vs healthy
-infile=../DGE_data/sorted_DGEs/allTissues_sorted_expression_matrix_trs.csv
-outdir=../results/allTissues_tissue-sample-BatchRemoval/
-clust_file=../results/clusters_final_out/cluster_ids_fromOleg_06_29.csv
-#outdir_DEG=../results/DEG_analysis/cluster_ids_fromOleg_06_29_CellType/
-outdir_DEG=../results/DEG_analysis/cluster_ids_fromOleg_06_29_CellType/no_CellTyping
+module add anaconda3
+source activate cia
+#python3 Python/scVI_v0.7.1.py --help
+infile=data/sorted_DGEs/sorted_expression_matrix.csv
+outdir=data/scVI_normalized/
+clust_file=data/clustering_and_celltype_identification/cluster_ids.csv
+outdir_DEG=data/DEG_analysis/sick_vs_healthy
 mkdir -p $outdir_DEG
-mkdir -p $outdir_DEG/vanilla_mode
 mkdir -p $outdir_DEG/change_mode
-python scVI_v0.7.1_test.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --sort_column 4 --group_column 3 --use_batches --batch_id 0 2
+python3 Python/scVI_v0.7.1.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --sort_column 1 3 --group_column 2 --use_batches --batch_id 0 2
 wait
 
 ```
+
+DEG_sort_significant.R
 
 
 ### Identification of cellular interactions and MCDM/MO-MCDM construction
