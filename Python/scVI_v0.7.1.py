@@ -15,6 +15,7 @@ os.chdir changes the working directory so that the code should work the same as 
 This works as I keep my scripts in the ./scripts directory from the projects home directory ./ 
 '''
 # os.chdir(os.getcwd() + '/scripts') 
+# os.chdir(os.getcwd() + '/github/Python') 
 
 '''
 All steps in the code is defined as a function. 
@@ -254,11 +255,11 @@ def main():
     parser = argparse.ArgumentParser(description='Analyse single cell data using scVI')
     parser.add_argument('--infile', help='Relative path to the input data. The input file need to be a comma separated csv file, with cells as rows and genes as columns', required=True, type=lambda x: is_valid_file(parser, x))
     parser.add_argument('--outdir', help='The path to the cluster_analysis output directory', required=True)
-    parser.add_argument('--use_batches', dest='use_batches', action='store_true', default=False, help='add this command if normalization over batches are needed.')
-    parser.add_argument('--batch_id', nargs='+', type=int, default=0, help='Define which part of the colnames should be used to define batches (count from 0, sep = "_"). eg cellname; "BatchID_cell1". Default = 0. If multiple sources of batch effect, input a space-separated list of integers')
+    parser.add_argument('--use_batches', dest='use_batches', action='store_true', default=False, help='add if normalization over batches are needed.')
+    parser.add_argument('--batch_id', nargs='+', type=int, default=0, help='Define which parts of the colnames (infile) should be used to define batches (count from 0, sep = "_"). eg cellname; "BatchID_cell1". Default = 0. If multiple sources of batch effect, input a space-separated list of integers')
     parser.add_argument('--n_epochs', type=int, default=400, help='This argument will define the amount of training and should depend on the number of cells in the input data. Recommended amount is 100 or more. Default = 400.')
-    parser.add_argument('--cluster_analysis', dest='cluster_analysis', action='store_true', default=False, help='add this command if you want to perform the cluster analysis.')
-    parser.add_argument('--resolution', type=float, default=0.5, help='This argument will define the resolution of clustering. Default = 0.5. Only used id cluster_analysis == True')
+    parser.add_argument('--cluster_analysis', dest='cluster_analysis', action='store_true', default=False, help='add if you want to perform the cluster analysis.')
+    parser.add_argument('--resolution', type=float, default=0.5, help='This argument will define the resolution of clustering. Default = 0.5. Only used if cluster_analysis == True')
     parser.add_argument('--DEG_analysis', dest='DEG_analysis', action='store_true', default=False, help='add this command if you want to perform the differential expression analysis.')
     parser.add_argument('--clust_file', help='Relative path to the cluster data file. Required for --DEG_analysis', required=False)
     parser.add_argument('--outdir_DEG', help='The path to the DEG_analysis output directory. Required for --DEG_analysis', required=False)
@@ -301,29 +302,25 @@ def main():
     '''
     To test the script from the python environment (I use spyder), the data can be loaded as in the commented lines.    
     '''
-#    infile = os.getcwd() + "/../DGE_data/sorted_DGEs/allTissues_sorted_expression_matrix_trs.csv"
-##    outdir = os.getcwd() + "/../results/allTissues_noBatchRemoval/scVI_out_1.5"
-#    outdir = os.getcwd() + "/../results/allTissues_tissue-sample-BatchRemoval"
+#    infile = os.getcwd() + "/../data/sorted_DGEs/sorted_expression_matrix.csv"
+#    outdir = os.getcwd() + "/../data/scVI_normalized/"
 #    use_batches = True
 #    batch_id = tuple([0,2])
 #    n_epochs = 400
-##    resolution = 1.5
-##    cluster_analysis = True
 #    cluster_analysis = False
 
 #    DEG_analysis = True
-#    clust_file = os.getcwd() + "/../results/clusters_final_out/cluster_ids_fromOleg_06_29.csv"
+#    clust_file = os.getcwd() + "/../data/clusters_final_out/cluster_ids_fromOleg_06_29.csv"
 #    outdir_DEG = os.getcwd() + "/../results/DEG_analysis/cluster_ids_fromOleg_06_29_CellType/marker_genes"
 
-#    sort_column = tuple([1, 4])
+#    sort_column = tuple([4])
 #    group_column = tuple([3])
-
-#    sort_column = None
-#    group_column = tuple([1])
 
 
     print('load and set-up the data')
     gene_dataset = scvi.data.read_csv(infile)
+    gene_dataset = gene_dataset.transpose()
+
     if use_batches == True:
         gene_dataset, cells = data_setup(gene_dataset, use_batches, batch_id)
     elif use_batches == False:
@@ -341,23 +338,8 @@ def main():
     elif use_batches == False:
         scvi.data.setup_anndata(gene_dataset, layer="counts")
     
-#    # test
-    # import scvi
-    # import os
-    # infile = os.getcwd() + "/DGE_data/sorted_DGEs/allTissues_sorted_expression_matrix_test.csv"
-    # gene_dataset = scvi.data.read_csv(infile)
-    # scvi.data.setup_anndata(gene_dataset)
-    # full = scvi.model.SCVI(gene_dataset)    
-    # full.train(n_epochs = 400)  
 
     save_dir = os.path.join(outdir + "/full_posterior_" + str(n_epochs))
-
-    # test torch
-    # import torch
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # print('Using device:', device)
-    # print(torch.version.cuda)
-    # torch.tensor([1.0,2.0])
     
     # Define and train model
     '''
@@ -379,7 +361,7 @@ def main():
 
     # get latent variables
     latent = full.get_latent_representation() 
-    latent_MonteCarlo_1000 = full.get_latent_representation(give_mean=False, mc_samples=1000) 
+    #latent_MonteCarlo_1000 = full.get_latent_representation(give_mean=False, mc_samples=1000) 
     #latent_MonteCarlo_1000 = full.get_latent_representation(mc_samples=1000) 
     gene_dataset.obsm["X_scVI"] = latent
     # get normalized matrix
@@ -387,16 +369,16 @@ def main():
     # get latent output
     latent_out = pd.DataFrame(latent)
     latent_out.index = normalized.index
-    latent_MonteCarlo_1000_out = pd.DataFrame(latent_MonteCarlo_1000)
-    latent_MonteCarlo_1000_out.index = normalized.index
+    #latent_MonteCarlo_1000_out = pd.DataFrame(latent_MonteCarlo_1000)
+    #latent_MonteCarlo_1000_out.index = normalized.index
     # write to out, unless already exist
     '''
     These matrices may be needed for downstream analyses. I save them now to keep them ready.
     '''
     if not os.path.exists(outdir + '/latent_expression_matrix.csv'):
         latent_out.to_csv(outdir + '/latent_expression_matrix.csv')
-    if not os.path.exists(outdir + '/latent_MonteCarlo_1000_expression_matrix.csv'):
-        latent_MonteCarlo_1000_out.to_csv(outdir + '/latent_MonteCarlo_1000_expression_matrix.csv')
+ #   if not os.path.exists(outdir + '/latent_MonteCarlo_1000_expression_matrix.csv'):
+ #       latent_MonteCarlo_1000_out.to_csv(outdir + '/latent_MonteCarlo_1000_expression_matrix.csv')
     if not os.path.exists(outdir + '/normalized_expression_matrix.csv'):
         normalized.to_csv(outdir + '/normalized_expression_matrix.csv')
     
@@ -608,14 +590,8 @@ def main():
                             print('write output file: ' + outname)
                             de_change.to_csv(outdir_DEG + '/FCs/' + outname)
 
-                        '''
-                        Add additional analyses
-                        '''
 
 
-'''
-This line calles the main function when running the script from command line
-'''
 if __name__ == '__main__':
    main()
 
