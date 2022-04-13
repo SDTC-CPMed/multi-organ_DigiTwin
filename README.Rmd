@@ -61,12 +61,7 @@ sc_data_quality_sorting(filename)
 
 ### Clustering and cell type identification
 
-```{r}
-source("Python/ConvertReferencesSandra.ipynb")
-
-```
-
-```{bash}
+```{bash, eval=FALSE}
 #module add anaconda3
 #source activate dca
 python3 Python/ConvertReferencesSandra.ipynb
@@ -80,10 +75,9 @@ python3 Python/ConvertReferencesSandra.ipynb
 
 scVI_v0.7.1.py
 
-
-```{bash}
+```{bash, eval=FALSE}
 module add anaconda3
-source activate cia
+source activate cia # set user-specific python environment
 #python3 Python/scVI_v0.7.1.py --help
 infile=data/sorted_DGEs/sorted_expression_matrix.csv
 outdir=data/scVI_normalized/
@@ -94,6 +88,12 @@ mkdir -p $outdir_DEG/change_mode
 python3 Python/scVI_v0.7.1.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --sort_column 1 3 --group_column 2 --use_batches --batch_id 0 2
 wait
 
+```
+
+```{bash}
+module add anaconda3
+source activate cia # set user-specific python environment
+python3 Python/scVI_v0.7.1.py --help
 ```
 
 DEG_sort_significant.R

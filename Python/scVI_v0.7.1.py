@@ -16,6 +16,7 @@ This works as I keep my scripts in the ./scripts directory from the projects hom
 '''
 # os.chdir(os.getcwd() + '/scripts') 
 # os.chdir(os.getcwd() + '/github/Python') 
+# os.chdir('/local/data1/user/sanli71/CIA_project/github/CIA_project/Python') 
 
 '''
 All steps in the code is defined as a function. 
@@ -179,18 +180,18 @@ def DEG_analysis_groupid1(gene_dataset, full, couple_celltypes, lables_unique, o
             print("\nDifferential Expression A/B for cell types\nA: %s\nB: %s\n" %
                   tuple((lables_unique[pd.DataFrame(couple_celltypes)[i]] for i in [1, 0])))
             # calculate DEGs based on vanilla mode and write to out
-            '''
-            vanilla is the prefered method for calculation of DEGs.
-            This method requires FCs to be calculated separetly             
-            '''
-            de_vanilla = full.differential_expression(
-                    idx1=cell_idx1,
-                    idx2=cell_idx2,
-                    mode='vanilla'
-            )
-            print('test: deg done')
-            print('write output file: ' + outname)
-            de_vanilla.to_csv(outdir_DEG + '/vanilla_mode/' + outname)
+            #'''
+            #vanilla is the prefered method for calculation of DEGs.
+            #This method requires FCs to be calculated separetly             
+            #'''
+            #de_vanilla = full.differential_expression(
+            #        idx1=cell_idx1,
+            #        idx2=cell_idx2,
+            #        mode='vanilla'
+            #)
+            #print('test: deg done')
+            #print('write output file: ' + outname)
+            #de_vanilla.to_csv(outdir_DEG + '/vanilla_mode/' + outname)
 
             # calculate DEGs based on change mode and write to out
             '''
@@ -253,7 +254,7 @@ def main():
     for identification of the input files
     '''
     parser = argparse.ArgumentParser(description='Analyse single cell data using scVI')
-    parser.add_argument('--infile', help='Relative path to the input data. The input file need to be a comma separated csv file, with cells as rows and genes as columns', required=True, type=lambda x: is_valid_file(parser, x))
+    parser.add_argument('--infile', help='Relative path to the input data. The input file need to be a comma separated csv file, with cells as columns and genes as rows', required=True, type=lambda x: is_valid_file(parser, x))
     parser.add_argument('--outdir', help='The path to the cluster_analysis output directory', required=True)
     parser.add_argument('--use_batches', dest='use_batches', action='store_true', default=False, help='add if normalization over batches are needed.')
     parser.add_argument('--batch_id', nargs='+', type=int, default=0, help='Define which parts of the colnames (infile) should be used to define batches (count from 0, sep = "_"). eg cellname; "BatchID_cell1". Default = 0. If multiple sources of batch effect, input a space-separated list of integers')
