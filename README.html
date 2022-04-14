@@ -197,39 +197,72 @@ if (dir.exists(&quot;data/scVI_normalized&quot;)==FALSE){
 }</code></pre>
 <p>The expected data input are five csv.gz matrices, one per organ, with cells over columns and genes over rows.</p>
 <pre class="r"><code>### Read data from GSE and save it to data/ 
-filename = &quot;data/UMI_expression_matrix.txt.gz&quot;</code></pre>
+input_file = &quot;data/UMI_expression_matrix.txt.gz&quot;</code></pre>
 </div>
 <div id="quality-assessment-and-sorting" class="section level2">
 <h2>Quality assessment and sorting</h2>
-<p>To ensure good quality data for downstream analyses, it is recommended to remove poor quality cells and genes from the analyses. We performed these analyses for all the organ combined. We define and keep the good quality cells as those having a minimum of 400 transcripts, 200 genes, and less than 20% mitochondrial genes. The good quality genes kept were defined as those being identified in at least 1% of the cells.</p>
+<p>To ensure good quality data for downstream analyses, it is recommended to remove poor quality cells and genes from the analyses. We performed these analyses on the input_file, for all the organs combined. We define and keep the good quality cells as those having a minimum of 400 transcripts, 200 genes, and less than 20% mitochondrial genes. The good quality genes kept were defined as those being identified in at least 1% of the cells.</p>
 <p>Due to the risk of duplicates in the library resulting in two or more cells sharing a cell barcode, it is also recommend to remove outliers. Based on empirical evaluation of the distribution an overestimation of transcripts count over the cells, we removed all cells with &gt;6000 transcripts.</p>
 <p>The output file is saved in data/sorted_DEGs.</p>
 <pre class="r"><code>source(&#39;R/sc_data_quality_sorting.R&#39;)
-sc_data_quality_sorting(filename)</code></pre>
-<div id="clustering-and-cell-type-identification" class="section level3">
-<h3>Clustering and cell type identification</h3>
+sc_data_quality_sorting(input_file)</code></pre>
+<div id="clustering-and-cell-type-identification-by-leidens-algorithm" class="section level3">
+<h3>Clustering and cell type identification by Leiden’s algorithm</h3>
 <pre class="bash"><code>#module add anaconda3
 #source activate dca
 python3 Python/ConvertReferencesSandra.ipynb
 #source deactivate</code></pre>
 </div>
+<div id="cell-type-identification-using-marker-genes" class="section level3">
+<h3>Cell type identification using marker genes</h3>
+<p>As the reference used for cell type identification in above method does not contain all cell types, some clusters remained unidentified after this analysis. To verify the cell types which were identified, as well as to further identify the unknown clusters, we looked for known marker genes among the cell types/clusters.</p>
+<p>DEGs were firsts calculated between each cell type/cluster (as identified by the <a href="#clustering-and-cell-type-identification-by-leiden&#39;s-algorithm">Leiden’s algorithm</a>) described above and all other cell types in the data, identifying the cell type specific marker genes. See a detailed description of the DEG analysis <a href="#data-normalization-and-differential-expression-analysis">below</a>.</p>
+<pre class="bash"><code>module add anaconda3
+source activate cia # if needed, define user-specific python environment
+
+# define in-/output directories and files
+infile=data/sorted_DGEs/sorted_expression_matrix.csv
+outdir=data/scVI_normalized/
+clust_file=data/clustering_and_celltype_identification/cluster_ids.csv
+outdir_DEG=data/DEG_analysis/cellTypeX_vs_allOtherCellTypes
+mkdir -p $outdir_DEG
+mkdir -p $outdir_DEG/change_mode
+# Calculate DEGs for each cell type and organ between the cell type and all other cell types
+python scVI_v0.7.1.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --group_column 1 --use_batches --batch_id 0 2
+wait
+</code></pre>
+<p>The significant DEGs were then identified based on fdr corrected p-velues, as described <a href="#data-normalization-and-differential-expression-analysis">below</a>.</p>
+<pre class="r"><code>source(&#39;R/DEG_sort_significant.R&#39;)
+outdir_DEG &lt;- &#39;data/DEG_analysis/cellTypeX_vs_allOtherCellTypes&#39;
+DEG_files &lt;- list.files(outdir_DEG, full.names = TRUE, pattern = &#39;DEGs_&#39;)
+# subset the DEGs
+DEG_sort_significant(DEG_files, outdir_DEG)</code></pre>
+<p>We then searched for known marker genes among the significantly DEGs in each cell type/cluster. The marker genes which we used for cell type verification/identification for each cluster can be seen in Table 1.</p>
+<p>Table 1. Marker genes used for cell type identification.</p>
+</div>
 <div id="data-normalization-and-differential-expression-analysis" class="section level3">
 <h3>Data normalization and Differential expression analysis</h3>
-<p>scVI_v0.7.1.py</p>
+<p>For each cell type in each organ, we calculate the DEGs between sick and healthy mice using scVI-tools (version 0.7.1)<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. The data was trained and normalized, including batch effect removal based on the individual samples sequenced (i.e. between organs and mice IDs). DEGs were then calculated between the two groups including the parameter mode=‘change’.</p>
+<p>Note that the training will produce somewhat different output from each run, so in case the analyses need to be reproduced, the trained data is saved to ‘outdir’, ‘/full_posterior_400/model_params’. If this directory exists, the trained data will be loaded from there. As the training can be time consuming, this also saves computational time. Note also that the training results will depend on the previous set-ups, and if any of the parameters ‘n_epochs’, ‘use_batches’, or ‘batch_id’ are changed, the training need to be re-run.</p>
+<p>** Not provided yet, too big?** To reproduce our results, use the trained data provided in ‘data/scVI_normalized/full_posterior_400/model_params’.</p>
 <pre class="bash"><code>module add anaconda3
-source activate cia
-#python3 Python/scVI_v0.7.1.py --help
+source activate cia # if needed, define user-specific python environment
+
+# define in-/output directories and files
 infile=data/sorted_DGEs/sorted_expression_matrix.csv
 outdir=data/scVI_normalized/
 clust_file=data/clustering_and_celltype_identification/cluster_ids.csv
 outdir_DEG=data/DEG_analysis/sick_vs_healthy
 mkdir -p $outdir_DEG
 mkdir -p $outdir_DEG/change_mode
+
+# Calculate DEGs for each cell type and organ, between sick and healthy mice
 python3 Python/scVI_v0.7.1.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --sort_column 1 3 --group_column 2 --use_batches --batch_id 0 2
-wait
-</code></pre>
+wait</code></pre>
+<p>The output from this code consists of one table of DEGs for each cell type and organ as defined by ‘sort_column’, saved in ‘outdir_DEGs’. These files contains values which describes the data; scale values from the training, log fold-change values, non-zero proportions, and raw normalized mean values, for group 1 and group 2 respectively. The group-ids can be interpreted based on the output file names, group1_vs_group2 (eg. sick_vs_healthy). We define the significant DEGs based on the column ‘is_de_fdr_0.05’=True.</p>
+<p>Additionally, the normalized and latent data is saved to ‘outdir’ for downstream analyses.</p>
 <pre class="bash"><code>module add anaconda3
-source activate cia
+source activate cia # if needed, define user-specific python environment
 python3 Python/scVI_v0.7.1.py --help</code></pre>
 <pre><code>## usage: scVI_v0.7.1.py [-h] --infile INFILE --outdir OUTDIR [--use_batches]
 ##                       [--batch_id BATCH_ID [BATCH_ID ...]]
@@ -282,11 +315,74 @@ python3 Python/scVI_v0.7.1.py --help</code></pre>
 ##                         which to identify DEGs. If the column contains more
 ##                         that two groups, DEGs will be calculated for each
 ##                         unique value vs all others. (count first column as 0)</code></pre>
-<p>DEG_sort_significant.R</p>
+<p>We further subset these tables only to include significant DEGs, and columns relevant for downstream analyses. The output from this analysis consists of one table of significant DEGs for each input table of DEGs, which are saved to ‘[outdir_DEG]/subset_significant’ (Table 2).</p>
+<pre class="r"><code>source(&#39;R/DEG_sort_significant.R&#39;)
+outdir_DEG &lt;- &#39;data/DEG_analysis/sick_vs_healthy/change_mode&#39;
+DEG_files &lt;- list.files(outdir_DEG, full.names = TRUE, pattern = &#39;DEGs_&#39;)
+# subset the DEGs
+DEG_sort_significant(DEG_files, outdir_DEG)</code></pre>
+<pre class="r"><code># Example output from DEG_sort_significant.R
+Joint_Mac &lt;- read.csv(&#39;data/DEG_analysis/sick_vs_healthy/change_mode/subset_significant/significant_DEGs_Sick_vs_Healthy_Macrophages_Joint.csv&#39;, row.names = 1)
+knitr::kable(Joint_Mac[1:5,], caption = &quot;Table 2. Example output from differential expression analysis&quot;)</code></pre>
+<table>
+<caption>Table 2. Example output from differential expression analysis</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">proba_de</th>
+<th align="right">proba_not_de</th>
+<th align="right">bayes_factor</th>
+<th align="right">lfc_mean</th>
+<th align="left">is_de_fdr_0.05</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Ppp2r5d</td>
+<td align="right">0.9958</td>
+<td align="right">0.0042</td>
+<td align="right">5.468459</td>
+<td align="right">6.584303</td>
+<td align="left">True</td>
+</tr>
+<tr class="even">
+<td align="left">Ifi27</td>
+<td align="right">0.9918</td>
+<td align="right">0.0082</td>
+<td align="right">4.795386</td>
+<td align="right">3.217298</td>
+<td align="left">True</td>
+</tr>
+<tr class="odd">
+<td align="left">Snx20</td>
+<td align="right">0.9908</td>
+<td align="right">0.0092</td>
+<td align="right">4.679308</td>
+<td align="right">4.120939</td>
+<td align="left">True</td>
+</tr>
+<tr class="even">
+<td align="left">Slc25a20</td>
+<td align="right">0.9898</td>
+<td align="right">0.0102</td>
+<td align="right">4.575114</td>
+<td align="right">-4.061067</td>
+<td align="left">True</td>
+</tr>
+<tr class="odd">
+<td align="left">Bag6</td>
+<td align="right">0.9874</td>
+<td align="right">0.0126</td>
+<td align="right">4.361378</td>
+<td align="right">3.659021</td>
+<td align="left">True</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="identification-of-cellular-interactions-and-mcdmmo-mcdm-construction" class="section level3">
 <h3>Identification of cellular interactions and MCDM/MO-MCDM construction</h3>
-<p>To identify cell-cell interactions, we used NicheNet, a tool to model intercellular communications developed by <a href="https://doi.org/10.1038/s41592-019-0667-5">Browaeys et al., 2020</a>. To define the genes of interest for identification of the intercellular interactions, we used the lists of DEGs for each cell type in each organ. The interactions were thus predicted, between each pair of cell types and each organ separetly.</p>
+<p>To identify cell-cell interactions, we used NicheNet<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>, a tool to model intercellular communications. To define the genes of interest for identification of the intercellular interactions, we used the lists of DEGs for each cell type in each organ. The interactions were thus predicted, between each pair of cell types and each organ separately.</p>
 <p>As the NicheNet database consists of intercellular interactions in humans, the gene names were translated to their human orthologs. The translation file used for our studies is provided in /data/orthologous_translation_file.txt. To run this code on any other dataset, it is recommended to download the orthologs from Ensembl as described <a href="https://www.ensembl.info/2009/01/21/how-to-get-all-the-orthologous-genes-between-two-species/">here</a>.</p>
 <p>The input files to run NicheNet_analysis.R, are;</p>
 <ul>
@@ -332,6 +428,16 @@ python3 Python/scVI_v0.7.1.py --help</code></pre>
 <h3>Prediction of upstream regulators (URs)</h3>
 </div>
 </div>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Gayoso, Adam, et al. A Python library for probabilistic analysis of single-cell omics data. <em>Nature Biotechnology</em> 40.2: 163-166, <a href="doi:10.1038/s41587-021-01206-w" class="uri">doi:10.1038/s41587-021-01206-w</a> (2022).<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Browaeys, R., Saelens, W. &amp; Saeys, Y. NicheNet: modeling intercellular communication by linking ligands to target genes. <em>Nature Methods</em> 17, 159-162, <a href="doi:10.1038/s41592-019-0667-5" class="uri">doi:10.1038/s41592-019-0667-5</a> (2020).<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>
 
 

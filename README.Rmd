@@ -70,11 +70,47 @@ python3 Python/ConvertReferencesSandra.ipynb
 
 ### Cell type identification using marker genes
 
-As the reference used for cell type identification in above method does not contain all cell types, some clusters remained unidentified after this analysis. To verification the cell types which were identified, as well as to further identify the so far unidentified clusters, we ...
+As the reference used for cell type identification in above method does not contain all cell types, some clusters remained unidentified after this analysis. To verify the cell types which were identified, as well as to further identify the unknown clusters, we looked for known marker genes among the cell types/clusters. 
+
+DEGs were firsts calculated between each cell type/cluster (as identified by the [Leiden's algorithm](#clustering-and-cell-type-identification-by-leiden's-algorithm)) described above and all other cell types in the data, identifying the cell type specific marker genes. See a detailed description of the DEG analysis [below](#data-normalization-and-differential-expression-analysis).
+
+```{bash, eval=FALSE}
+module add anaconda3
+source activate cia # if needed, define user-specific python environment
+
+# define in-/output directories and files
+infile=data/sorted_DGEs/sorted_expression_matrix.csv
+outdir=data/scVI_normalized/
+clust_file=data/clustering_and_celltype_identification/cluster_ids.csv
+outdir_DEG=data/DEG_analysis/cellTypeX_vs_allOtherCellTypes
+mkdir -p $outdir_DEG
+mkdir -p $outdir_DEG/change_mode
+# Calculate DEGs for each cell type and organ between the cell type and all other cell types
+python scVI_v0.7.1.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --group_column 1 --use_batches --batch_id 0 2
+wait
+
+```
+
+The significant DEGs were then identified based on fdr corrected p-velues, as described [below](#data-normalization-and-differential-expression-analysis).
+
+```{r, eval=FALSE}
+source('R/DEG_sort_significant.R')
+outdir_DEG <- 'data/DEG_analysis/cellTypeX_vs_allOtherCellTypes'
+DEG_files <- list.files(outdir_DEG, full.names = TRUE, pattern = 'DEGs_')
+# subset the DEGs
+DEG_sort_significant(DEG_files, outdir_DEG)
+```
+
+We then searched for known marker genes among the significantly DEGs in each cell type/cluster. The marker genes which we used for cell type verification/identification for each cluster can be seen in Table 1. 
+
+Table 1. Marker genes used for cell type identification.
+
+
+
 
 ### Data normalization and Differential expression analysis
 
-For each cell type in each organ, we calculate the DEGs between sick and healthy mice using scVI-tools (version 0.7.1)[^Gayoso]. The data was trained and normalized, including batch effect removal based on the individual samples sequenced (i.e. between organs and mice IDs). DEGs were then calculated between the two groups including the parameter mode='change'. Additionally, DEGs were calculated between each cell type/cluster (as defined by the [Leiden's algorithm](#clustering-and-cell-type-identification-by-leiden's-algorithm)) described above and all other cell types in the data. 
+For each cell type in each organ, we calculate the DEGs between sick and healthy mice using scVI-tools (version 0.7.1)[^Gayoso]. The data was trained and normalized, including batch effect removal based on the individual samples sequenced (i.e. between organs and mice IDs). DEGs were then calculated between the two groups including the parameter mode='change'. 
 
 Note that the training will produce somewhat different output from each run, so in case the analyses need to be reproduced, the trained data is saved to 'outdir', '/full_posterior_400/model_params'. If this directory exists, the trained data will be loaded from there. As the training can be time consuming, this also saves computational time. Note also that the training results will depend on the previous set-ups, and if any of the parameters 'n_epochs', 'use_batches', or 'batch_id' are changed, the training need to be re-run.  
 
@@ -95,10 +131,11 @@ mkdir -p $outdir_DEG/change_mode
 # Calculate DEGs for each cell type and organ, between sick and healthy mice
 python3 Python/scVI_v0.7.1.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --sort_column 1 3 --group_column 2 --use_batches --batch_id 0 2
 wait
-
-# Calculate DEGs for each cell type and organ between the cell type and all other cell types
-
 ```
+
+The output from this code consists of one table of DEGs for each cell type and organ as defined by 'sort_column', saved in 'outdir_DEGs'. These files contains values which describes the data; scale values from the training, log fold-change values, non-zero proportions, and raw normalized mean values, for group 1 and group 2 respectively. The group-ids can be interpreted based on the output file names, group1_vs_group2 (eg. sick_vs_healthy). We define the significant DEGs based on the column 'is_de_fdr_0.05'=True.
+
+Additionally, the normalized and latent data is saved to 'outdir' for downstream analyses.  
 
 ```{bash}
 module add anaconda3
@@ -106,27 +143,21 @@ source activate cia # if needed, define user-specific python environment
 python3 Python/scVI_v0.7.1.py --help
 ```
 
-The output from this code consists of one table of DEGs for each cell type and organ as defined by 'sort_column'  (see example output below), saved in 'outdir_DEGs'. These files contains values which describes the data; scale values from the training, log foldchange values, non-zero proportions, and raw normalized mean values, for group 1 and group 2 respectively. The group-ids can be interpreted based on the output file names, group1_vs_group2 (eg. sick_vs_healthy). We define the significant DEGs based on the column 'is_de_fdr_0.05'=True.
+We further subset these tables only to include significant DEGs, and columns relevant for downstream analyses. The output from this analysis consists of one table of significant DEGs for each input table of DEGs, which are saved to '[outdir_DEG]/subset_significant' (Table 2).
 
-Additionally, the normalized and latent data is saved to 'outdir' for downstream analyses.  
-
-```{r}
-# Example output from scVI.v0.7.1.py
-Joint_Mac <- read.csv('data/DEG_analysis/sick_vs_healthy/change_mode/DEGs_Sick_vs_Healthy_Macrophages_Joint.csv')
-head(Joint_Mac)
-```
-
-We further subset these tables only to include significant DEGs. 
-
-```{r}
+```{r, eval=FALSE}
 source('R/DEG_sort_significant.R')
 outdir_DEG <- 'data/DEG_analysis/sick_vs_healthy/change_mode'
-DEG_files <- list.files(outdir_DEG, full.names = TRUE)
-DEG_sort_significant.R(DEG_files)
+DEG_files <- list.files(outdir_DEG, full.names = TRUE, pattern = 'DEGs_')
+# subset the DEGs
+DEG_sort_significant(DEG_files, outdir_DEG)
 ```
 
-
-
+```{r}
+# Example output from DEG_sort_significant.R
+Joint_Mac <- read.csv('data/DEG_analysis/sick_vs_healthy/change_mode/subset_significant/significant_DEGs_Sick_vs_Healthy_Macrophages_Joint.csv', row.names = 1)
+knitr::kable(Joint_Mac[1:5,], caption = "Table 2. Example output from differential expression analysis")
+```
 
 
 ### Identification of cellular interactions and MCDM/MO-MCDM construction
