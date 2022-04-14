@@ -9,21 +9,6 @@ import re
 import sys
 import scvi
 
-
-'''
-os.chdir changes the working directory so that the code should work the same as when I run it from command line.
-This works as I keep my scripts in the ./scripts directory from the projects home directory ./ 
-'''
-# os.chdir(os.getcwd() + '/scripts') 
-# os.chdir(os.getcwd() + '/github/Python') 
-# os.chdir('/local/data1/user/sanli71/CIA_project/github/CIA_project/Python') 
-
-'''
-All steps in the code is defined as a function. 
-The main function is the last function and from where the input is loaded and all the other functions are called.
-To read and understand the code, start from the main function, and go back to the other functions ones they are called.
-'''
-
 # Check if an input file exists
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -57,7 +42,7 @@ def data_setup(gene_dataset, use_batches=False, batch_id = None):
     return gene_dataset, cells
 
 # function for cell clustering. 
-# Note: This function may need to be updated for the new scVI-tools
+# Note: This function may need to be updated for new versions of scVI-tools
 def cluster_cells(full, outdir, cells, resolution, cellids = None):
     '''
     The "cells" here can be exchanged for full.gene_dataset.CellID to clean up the code
@@ -166,7 +151,6 @@ def DEG_setup(clusts, gene_dataset, group_column, sort_column = None):
         groupid = np.unique(clusts[[groupid]].values)
         return gene_dataset, groupid, lables, lables_unique
 
-# DEG analysis when len(groupid) >= 2
 def DEG_analysis_groupid1(gene_dataset, full, couple_celltypes, lables_unique, outdir_DEG, outname):
     if len(couple_celltypes[0]) == 2:
         # create boolean arrays of which cells in the gene_dataset to calculate DEGs between
@@ -281,7 +265,7 @@ def main():
     print('Initiate analysis')
 
     '''
-    Here is the loading of the input data. This part only works if run from command line or shell script
+    Load of the input data and information.
     '''
     infile = os.getcwd() + '/' + args.infile.name
     outdir = os.getcwd() + '/' + args.outdir
@@ -299,24 +283,6 @@ def main():
         if args.sort_column!=None:
             sort_column = tuple(args.sort_column)
         group_column = tuple(args.group_column)
-
-    '''
-    To test the script from the python environment (I use spyder), the data can be loaded as in the commented lines.    
-    '''
-#    infile = os.getcwd() + "/../data/sorted_DGEs/sorted_expression_matrix.csv"
-#    outdir = os.getcwd() + "/../data/scVI_normalized/"
-#    use_batches = True
-#    batch_id = tuple([0,2])
-#    n_epochs = 400
-#    cluster_analysis = False
-
-#    DEG_analysis = True
-#    clust_file = os.getcwd() + "/../data/clusters_final_out/cluster_ids_fromOleg_06_29.csv"
-#    outdir_DEG = os.getcwd() + "/../results/DEG_analysis/cluster_ids_fromOleg_06_29_CellType/marker_genes"
-
-#    sort_column = tuple([4])
-#    group_column = tuple([3])
-
 
     print('load and set-up the data')
     gene_dataset = scvi.data.read_csv(infile)

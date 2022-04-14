@@ -1,6 +1,15 @@
+# Sandra Lilja
+# R version 4.0.4
+#'
+#' Check the quality of the data and remove outliers
+#' 
+#' @param filename The filename of the csv.gz input file with cells in columns and genes in rows
+#' 
+#' @export
+#'
+
 library(dplyr)
 
-rm(list=ls())
 
 # method = 'vanilla'
 method = 'change'
