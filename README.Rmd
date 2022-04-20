@@ -68,45 +68,6 @@ python3 Python/ConvertReferencesSandra.ipynb
 #source deactivate
 ```
 
-### Cell type identification using marker genes
-
-As the reference used for cell type identification in above method does not contain all cell types, some clusters remained unidentified after this analysis. To verify the cell types which were identified, as well as to further identify the unknown clusters, we looked for known marker genes among the cell types/clusters. 
-
-DEGs were firsts calculated between each cell type/cluster (as identified by the [Leiden's algorithm](#clustering-and-cell-type-identification-by-leiden's-algorithm)) described above and all other cell types in the data, identifying the cell type specific marker genes. See a detailed description of the DEG analysis [below](#data-normalization-and-differential-expression-analysis).
-
-```{bash, eval=FALSE}
-module add anaconda3
-source activate cia # if needed, define user-specific python environment
-
-# define in-/output directories and files
-infile=data/sorted_DGEs/sorted_expression_matrix.csv
-outdir=data/scVI_normalized/
-clust_file=data/clustering_and_celltype_identification/cluster_ids.csv
-outdir_DEG=data/DEG_analysis/cellTypeX_vs_allOtherCellTypes
-mkdir -p $outdir_DEG
-mkdir -p $outdir_DEG/change_mode
-# Calculate DEGs for each cell type and organ between the cell type and all other cell types
-python scVI_v0.7.1.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --group_column 1 --use_batches --batch_id 0 2
-wait
-
-```
-
-The significant DEGs were then identified based on fdr corrected p-velues, as described [below](#data-normalization-and-differential-expression-analysis).
-
-```{r, eval=FALSE}
-source('R/DEG_sort_significant.R')
-outdir_DEG <- 'data/DEG_analysis/cellTypeX_vs_allOtherCellTypes'
-DEG_files <- list.files(outdir_DEG, full.names = TRUE, pattern = 'DEGs_')
-# subset the DEGs
-DEG_sort_significant(DEG_files, outdir_DEG)
-```
-
-We then searched for known marker genes among the significantly DEGs in each cell type/cluster. The marker genes which we used for cell type verification/identification for each cluster can be seen in Table 1. 
-
-Table 1. Marker genes used for cell type identification.
-
-
-
 
 ### Data normalization and Differential expression analysis
 
@@ -137,10 +98,10 @@ The output from this code consists of one table of DEGs for each cell type and o
 
 Additionally, the normalized and latent data is saved to 'outdir' for downstream analyses.  
 
-```{bash}
-module add anaconda3
+```{bash, eval=FALSE}
+module add python/anaconda3-2021.05-3.8.8
 source activate cia # if needed, define user-specific python environment
-python3 Python/scVI_v0.7.1.py --help
+python Python/scVI_v0.7.1.py --help
 ```
 
 We further subset these tables only to include significant DEGs, and columns relevant for downstream analyses. The output from this analysis consists of one table of significant DEGs for each input table of DEGs, which are saved to '[outdir_DEG]/subset_significant' (Table 2).
@@ -153,11 +114,116 @@ DEG_files <- list.files(outdir_DEG, full.names = TRUE, pattern = 'DEGs_')
 DEG_sort_significant(DEG_files, outdir_DEG)
 ```
 
-```{r}
+```{r, include=TRUE, echo=FALSE}
 # Example output from DEG_sort_significant.R
 Joint_Mac <- read.csv('data/DEG_analysis/sick_vs_healthy/change_mode/subset_significant/significant_DEGs_Sick_vs_Healthy_Macrophages_Joint.csv', row.names = 1)
 knitr::kable(Joint_Mac[1:5,], caption = "Table 2. Example output from differential expression analysis")
 ```
+
+### Cell type identification using marker genes
+
+As the reference used for cell type identification in above method does not contain all cell types, some clusters remained unidentified after this analysis. To verify the cell types which were identified, as well as to further identify the unknown clusters, we looked for known marker genes among the cell types/clusters. 
+
+DEGs were firsts calculated between each cell type/cluster (as identified by the [Leiden's algorithm](#clustering-and-cell-type-identification-by-leiden's-algorithm)) described above and all other cell types in the data, identifying the cell type specific marker genes. See a detailed description of the DEG analysis [above](#data-normalization-and-differential-expression-analysis).
+
+```{bash, eval=FALSE}
+module add anaconda3
+source activate cia # if needed, define user-specific python environment
+
+# define in-/output directories and files
+infile=data/sorted_DGEs/sorted_expression_matrix.csv
+outdir=data/scVI_normalized/
+clust_file=data/clustering_and_celltype_identification/cluster_ids.csv
+outdir_DEG=data/DEG_analysis/cellTypeX_vs_allOtherCellTypes
+mkdir -p $outdir_DEG
+mkdir -p $outdir_DEG/change_mode
+# Calculate DEGs for each cell type and organ between the cell type and all other cell types
+python scVI_v0.7.1.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --group_column 1 --use_batches --batch_id 0 2
+wait
+
+```
+
+The significant DEGs were then identified based on fdr corrected p-velues, as described [above](#data-normalization-and-differential-expression-analysis).
+
+```{r, eval=FALSE}
+source('R/DEG_sort_significant.R')
+outdir_DEG <- 'data/DEG_analysis/cellTypeX_vs_allOtherCellTypes'
+DEG_files <- list.files(outdir_DEG, full.names = TRUE, pattern = 'DEGs_')
+# subset the DEGs
+DEG_sort_significant(DEG_files, outdir_DEG)
+```
+
+We then searched for known marker genes among the significantly DEGs in each cell type/cluster. The marker genes which we used for cell type verification/identification for each cluster can be seen in Table 1. 
+
+Table 1. Marker genes used for cell type identification.
+
+
+```{r}
+# Define marker genes of interest
+marker_genes <- c('Ms4a1', 'Cd22', 'Cd19',
+                  'Cebpa', 'Nfe2', 'Ifit1', 'Cd7', 'Siglech',
+                  'Cdh5', 'Pecam1', 'Fabp4',
+                  'Alas2', 'Car2', 'Cpox', 'Hba-a1', 'Hbb-bt', 'Alad', 'Tfrc', 'Hba-a2',
+                  'Col1a2', 'Col3a1', 'Fbln2', 'Fstl1', 'Gsn', 'Mmp2', 'Sparc', 'Vim',
+                  'Camp', 'Ngp', 'S100a8', 'S100a9',
+                  'Ly6g', 'Mmp9', 'Ltf',
+                  'Cd14', 'C1qb', 'C1qc', 'Cd68', 'Ctss', 'Cxcl2', 'Gatm', 'Lyz2', 'Rgs1',
+                  'F13a1', 'Ccl6', 'Cxcl3', 'Il1b', 'Ccr2',
+                  'Klrk1', 'Il18rap', 'Gzma',
+                  'Bcl11b', 'Il7r', 'Itk', 'Lef1',
+                  'Bgn', 'Rgs16', 'Palld', 'Rgs5', 'Cpe', 'Sgce', 'Fhl1', 'Cd151', 'Adi1', 'Adgrf5',
+                  'Krt14', 'Krt5', 'Mt2', 'BC100530', 'Fosl1', 'Ptgs2')
+
+```
+
+First, we check the expression level of our chosen marker genes over the different cell types and unidentified clusters in the data. 
+
+```{r, eval=FALSE}
+source('R/marker_gene_distribution.R')
+dir.data <- './data/scVI_normalized'
+dir.clust <- './data/clustering_and_celltype_identification'
+clusts <- read.csv(list.files(dir.clust, pattern = '^cluster_ids', full.names = T))
+exprdata <- read.csv(list.files(dir.data, pattern = 'normalized', full.names = T), row.names = 1)
+
+plt <- marker_gene_expression(exprdata, clusts, marker_genes)
+# write to output
+pdf(paste(dir.clust, '/Violin_markerGenes_vs_CellTypes.pdf', sep = ''), width = 22, height = 5)
+plt
+dev.off()
+```
+
+![Figure 1. Marker gene expression level over the different celltypes/clusters.](./data/clustering_and_celltype_identification/Violin_markerGenes_vs_CellTypes.png){width=65%}
+
+We then check in which cell types/clusters the marker genes are significantly differentially expressed. 
+
+```{r, eval=FALSE}
+source('R/marker_gene_distribution.R')
+dir.clust <- './data/clustering_and_celltype_identification'
+clusts <- read.csv(list.files(dir.clust, pattern = '^cluster_ids', full.names = T))
+dir.DE <- './data/DEG_analysis/cellTypeX_vs_allOtherCellTypes/change_mode/subset_significant'
+DE_data <- list.files(dir.DE)
+
+plt <- marker_gene_DE(DE_data, dir.DE, clusts, marker_genes)
+# write to output
+pdf(paste(dir.clust, '/heatmap_markerGenes.pdf', sep = ''), width = 22, height = 5)
+plt
+dev.off()
+```
+
+![Figure 2. Heatmap indicating the significantly upregulated marker genes (1) vs not significantly upregulated marker genes (0) in the different cell types/clusters.](./data/clustering_and_celltype_identification/heatmap_markerGenes.png){width=65%}
+
+Based on Figure 1 and Figure 2, we verified the [previous cell type identification](#clustering-and-cell-type-identification-by-leidens-algorithm), and further identified the unknown cell types as Myocytes (Unknown0), Neutrophils (Unknown16), and Basal III cells (Unknown6) respectively. We update the file containing the clusters information to include these cell type identities. 
+
+```{r, eval=FALSE}
+head(clusts)
+clusts$CellType_markers <- clusts$CellType
+clusts$CellType_markers[clusts$CellType_markers == 'Unknown6'] <- 'Basal III cells'
+clusts$CellType_markers[clusts$CellType_markers == 'Unknown16'] <- 'Neutrophils'
+clusts$CellType_markers[clusts$CellType_markers == 'Unknown0'] <- 'Myocytes'
+write.csv(clusts, paste(dir.clust, '/cluster_ids.csv', sep = ''), row.names = F)
+```
+
+
 
 
 ### Identification of cellular interactions and MCDM/MO-MCDM construction
@@ -173,7 +239,7 @@ To run this code on any other dataset, it is recommended to download the ortholo
 The input files to run NicheNet_analysis.R, are;  
 
 * the normalized expression data. Output from [scVI_v0.7.1.py](#data-normalization-and-differential-expression-analysis)
-* the cell type identification file. Output from [cell type analysis script](#clustering-and-cell-type-identification)
+* the cell type identification file. Output from [cell type analysis script](#clustering-and-cell-type-identification-by-leidens-algorithm)
 * a translation file of human orthologs
 * a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns, as output from the [differential expression analysis](#data-normalization-and-differential-expression-analysis), DEG_sort_significant.R. 
 
