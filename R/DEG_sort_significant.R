@@ -15,6 +15,42 @@
 
 library(dplyr)
 
+list_DEGs_NicheNet <- function(X, DEG_files){
+  groups <- sapply(strsplit(DEG_files, '/'), tail, 1)
+  groups <- sapply(strsplit(groups, '\\.'), '[[', 1)
+  groups <- paste(sapply(strsplit(groups, '_'), '[[', 5),
+                  sapply(strsplit(groups, '_'), '[[', 6), sep = '_')
+  
+  if (length(groups) != length(unique(sort(groups)))){
+    stop('The groups of interactions are not unique')
+  }
+  
+  DEGs_maxlength <- c()
+  groups_x <- c()
+  for (i in 1:length(X)){
+    if (length(rownames(X[[i]])) < 1){
+      next
+    }
+    DEGs_maxlength <- c(DEGs_maxlength, length(rownames(X[[i]])))
+    groups_x <- c(groups_x, groups[i])
+  }
+  DEGs_Ngroups <- length(DEGs_maxlength)
+  DEGs_maxlength <- max(DEGs_maxlength)
+  DEGs <- matrix(NA, nrow = DEGs_maxlength, ncol = DEGs_Ngroups)
+  
+  z <- 1
+  for (i in 1:length(X)){
+    if (length(rownames(X[[i]])) < 1){
+      next
+    }
+    # colnames(DEGs)[z] <- groups[i]
+    DEGs[1:length(rownames(X[[i]])),z] <- rownames(X[[i]])
+    z <- z+1
+  }
+  colnames(DEGs) <- groups_x
+  return(DEGs)
+}
+
 DEG_sort_significant <- function(DEG_files, outdir_DEG, method = 'change'){
   dir.out <- paste(outdir_DEG, '/', 'subset_significant', sep = '')
   if (dir.exists(dir.out)==FALSE){
@@ -56,47 +92,11 @@ DEG_sort_significant <- function(DEG_files, outdir_DEG, method = 'change'){
     write.csv(X[i], paste(dir.out, outnames[i], sep = '/'))
   }
   
-  # #########################
-  # ### Create combined table of DEGs per cell type for NicheNet analysis
-  # #########################
-  # list_DEGs_NicheNet <- function(X, DEG_files){
-  #   groups <- sapply(strsplit(DEG_files, '/'), tail, 1)
-  #   groups <- sapply(strsplit(groups, '\\.'), '[[', 1)
-  #   groups <- paste(sapply(strsplit(groups, '_'), '[[', 5),
-  #                   sapply(strsplit(groups, '_'), '[[', 6), sep = '_')
-  #   
-  #   if (length(groups) != length(unique(sort(groups)))){
-  #     stop('The groups of interactions are not unique')
-  #   }
-  #   
-  #   DEGs_maxlength <- c()
-  #   groups_x <- c()
-  #   for (i in 1:length(X)){
-  #     if (length(rownames(X[[i]])) < 1){
-  #       next
-  #     }
-  #     DEGs_maxlength <- c(DEGs_maxlength, length(rownames(X[[i]])))
-  #     groups_x <- c(groups_x, groups[i])
-  #   }
-  #   DEGs_Ngroups <- length(DEGs_maxlength)
-  #   DEGs_maxlength <- max(DEGs_maxlength)
-  #   DEGs <- matrix(NA, nrow = DEGs_maxlength, ncol = DEGs_Ngroups)
-  #   # remove(DEGs_maxlength, DEGs_Ngroups)
-  #   z <- 1
-  #   for (i in 1:length(X)){
-  #     if (length(rownames(X[[i]])) < 1){
-  #       next
-  #     }
-  #     # colnames(DEGs)[z] <- groups[i]
-  #     DEGs[1:length(rownames(X[[i]])),z] <- rownames(X[[i]])
-  #     z <- z+1
-  #   }
-  #   colnames(DEGs) <- groups_x
-  #   return(DEGs)
-  # }
-  # 
-  # DEGs <- list_DEGs_NicheNet(X, DEG_files)
-  # write.csv(DEGs, paste(dir.out, '/DEGs_Sick_vs_Healthy.csv', sep = ''), row.names = F)
+  #########################
+  ### Create combined table of DEGs per cell type for NicheNet analysis
+  #########################
+  DEGs <- list_DEGs_NicheNet(X, DEG_files)
+  write.csv(DEGs, paste(dir.out, '/DEGs_Sick_vs_Healthy.csv', sep = ''), row.names = F)
   
 }
 
