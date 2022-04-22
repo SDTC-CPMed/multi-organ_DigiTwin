@@ -17,20 +17,23 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, echo FALSE, warning=FALSE, eval=FALSE}
 
-if (dir.exists("data/IPA/curation")==FALSE){
-  dir.create("data/IPA/curation", recursive = T)
+if (dir.exists("./data/IPA/curation")==FALSE){
+  dir.create("./data/IPA/curation", recursive = T)
 }
-if (dir.exists("data/sorted_DGEs")==FALSE){
-  dir.create("data/sorted_DGEs")
+if (dir.exists("./data/sorted_DGEs")==FALSE){
+  dir.create("./data/sorted_DGEs")
 }
-if (dir.exists("data/NicheNet_analysis_curated")==FALSE){
-  dir.create("data/NicheNet_analysis_curated")
+if (dir.exists("./data/NicheNet_analysis")==FALSE){
+  dir.create("./data/NicheNet_analysis")
 }
-if (dir.exists("data/clustering_and_celltype_identification")==FALSE){
-  dir.create("data/clustering_and_celltype_identification")
+if (dir.exists("./data/NicheNet_analysis_curated")==FALSE){
+  dir.create("./data/NicheNet_analysis_curated")
 }
-if (dir.exists("data/scVI_normalized")==FALSE){
-  dir.create("data/scVI_normalized")
+if (dir.exists("./data/clustering_and_celltype_identification")==FALSE){
+  dir.create("./data/clustering_and_celltype_identification")
+}
+if (dir.exists("./data/scVI_normalized")==FALSE){
+  dir.create("./data/scVI_normalized")
 }
 ```
 
@@ -273,14 +276,19 @@ Note: that the interactions between organs in these files are not yet curated on
 ```{r, eval=FALSE}
 source('R/NicheNet_analysis.R')
 dir.data <- './data/scVI_normalized'
-exprdata <- read.csv(list.files(dir.data, pattern = 'normalized', full.names = T), row.names = 1)
+exprdata_in <- read.csv(list.files(dir.data, pattern = 'normalized', full.names = T), row.names = 1)
 dir.clust <- './data/clustering_and_celltype_identification'
 clusts <- read.csv(list.files(dir.clust, pattern = '^cluster_ids', full.names = T))
-orth <- read.table('./data/orthologous_translation_file.txt')
-DEGs <- read.csv('./data/DEG_analysis/sick_vs_healthy/change_mode/subset_significant/DEGs_Sick_vs_Healthy.csv')
+orth <- read.table('./data/orthologous_translation_file.txt', header = T)
+DEGs_in <- read.csv('./data/DEG_analysis/sick_vs_healthy/change_mode/subset_significant/DEGs_Sick_vs_Healthy.csv')
+dir.out <- './data/NicheNet_analysis'
 
-NicheNet_analysis(data=exprdata, clusts, orth, DEGs)
+# Get ligand-target matrix
+ligand_target <- readRDS(url("https://zenodo.org/record/3260758/files/ligand_target_matrix.rds")) # targets = rows, ligands = columns
+# Get ligand-receptor interactions
+lr_network = as.matrix(readRDS(url("https://zenodo.org/record/3260758/files/lr_network.rds")))
 
+NicheNet_analysis_main(exprdata=exprdata_in, clusts, orth, DEGs=DEGs_in, dir_out, ligand_target, lr_network)
 ```
 
 
