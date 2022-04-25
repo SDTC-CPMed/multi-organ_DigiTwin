@@ -250,6 +250,7 @@ NicheNet_analysis_main <- function(exprdata, clusts, orth, DEGs, dir.out, ligand
   # colnames(all_exp_genes) <- paste("Cluster_", cc, sep="")
   colnames(all_exp_genes) <- cc
   # s <- 1
+  # t <- 1
   # t <- 24
   ntop_targets <- 250 # tested 700 as well, default == 250, last tested 600 did not work, 100o works
   for(s in 1:length(cc)){
@@ -269,9 +270,9 @@ NicheNet_analysis_main <- function(exprdata, clusts, orth, DEGs, dir.out, ligand
         print('Less than 3 cells in one or both of the groups. Skip to next')
         next
       }
-      unique(sort(paste(sapply(strsplit(colnames(exprdata), '_'), '[[', 1),
-                        sapply(strsplit(colnames(exprdata), '_'), '[[', 2),
-                        sapply(strsplit(colnames(exprdata), '_'), '[[', 3), sep = '_')))
+      # unique(sort(paste(sapply(strsplit(colnames(exprdata), '_'), '[[', 1),
+      #                   sapply(strsplit(colnames(exprdata), '_'), '[[', 2),
+      #                   sapply(strsplit(colnames(exprdata), '_'), '[[', 3), sep = '_')))
       # which(colnames(exprdata) %in% s_cells)
       # which(s_cells %in% t_cells)
       exp_genes <- define_expressed_genes(exprdata, s_cells, t_cells, exp_cutoff = 1e-5)
