@@ -1,3 +1,6 @@
+# Sandra Lilja
+# Python version 3.7.6
+
 import argparse
 import os
 import pandas as pd

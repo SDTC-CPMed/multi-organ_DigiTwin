@@ -1,3 +1,5 @@
+# Oleg Sysoev
+# Python version 3.7.6
 
 
 import pandas as pd
