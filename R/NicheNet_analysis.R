@@ -1,7 +1,7 @@
 # Sandra Lilja
 # R version 4.0.4
 #'
-#' Plot the expression level and/or FC of a set of genes 
+#' Identify all inter- and intra-organ interactions between each pair of cell types 
 #' 
 #' @param exprdata The normalized single-cell expression matrix
 #' @param clusts The clusters and cell type information, containing the column 'CellType'
@@ -16,25 +16,6 @@
 
 library(nichenetr)
 library(dplyr)
-
-# ct <- 'cluster_ids.csv' # define cell type translation file
-# orth <- 'orthologous_translation_file.txt' # define orthologus translation file
-# 
-# dir.data <- '../data/allTissues_tissue-sample-BatchRemoval'
-# dir.ct <- '../data/clusters_final_out'
-# dir.degs <- '../data/DEG_analysis/fdr_sorted'
-# dir.orth <- 'data'
-# dir.out <- '../data/NicheNet_analysis'
-# if (dir.exists(dir.out)==FALSE){
-#   dir.create(dir.out, recursive = T)
-#   print('dir.out was created')
-# }
-# 
-# # scVI adjusted scRNA-seq mouse data 
-# exprdata <- read.csv(paste(dir.data, "/normalized_expression_matrix.csv", sep = ''), row.names = 1)
-# # orthologous translation file
-# orth <- read.table(paste(dir.orth, orth, sep = '/'), header = T)
-
 
 list_orthologs  <- function(mouse_gene_list, orth){
   orth_sub = orth[which(orth$Mouse.gene.name %in% mouse_gene_list == TRUE),]

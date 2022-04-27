@@ -5,15 +5,15 @@ date: "07/04/2022"
 output: html_document
 ---
 
+# Project title
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## scRNA-seq analysis for construction of MCDMs, MO-MCDMs, and Connective Pathway Analysis
 
-# scRNA-seq analysis for construction of MCDMs, MO-MCDMs, and Connective Pathway Analysis
-
-## Define data structure and input files
+### Define data structure and input files
 
 ```{r, echo FALSE, warning=FALSE, eval=FALSE}
 
@@ -44,7 +44,7 @@ The expected data input are five csv.gz matrices, one per organ, with cells over
 input_file = "data/UMI_expression_matrix.txt.gz"
 ```
 
-## Quality assessment and sorting
+### Quality assessment and sorting
 
 To ensure good quality data for downstream analyses, it is recommended to remove poor quality cells and genes from the analyses.
 We performed these analyses on the input_file, for all the organs combined. 
@@ -66,15 +66,9 @@ sc_data_quality_sorting(input_file)
 
 Explain input file format and cell type naming
 
-For this script to work properly, the cells need to be named according to the following format; '[tissue/organ]\_[project]\_[disease group]\[group number]\_[cellID]', where 'tissue/organ', 'disease group', and 'disease group' + 'group number' will be used for coloring of the clusters and/or cell classification information for the output file. [disease group] should be written as "H" = Healthy or "S" = Sick. Example: "Lung_CIA_H6_GTTAAGCATTAT".
+For this script to work properly, the cells need to be named according to the following format; '[tissue/organ]\_[project]\_[disease group][group number]\_[cellID]', where 'tissue/organ', 'disease group', and 'disease group' + 'group number' will be used for coloring of the clusters and/or cell classification information for the output file. [disease group] should be written as "H" = Healthy or "S" = Sick. Example: "Lung_CIA_H6_GTTAAGCATTAT".
 
-Package versions:
 
-Scanpy 1.4.5  
-DCA 0.2.3  
-Tensorflow 1.14.0  
-Pandas 0.25.1  
-Numpy 1.17.2  
 
 ```{bash, eval=FALSE}
 python Python/celltyping.py data/sorted_DGEs/sorted_expression_matrix.csv data/references/ReferenceDataMouse.csv 1.0
@@ -82,6 +76,7 @@ python Python/celltyping.py data/sorted_DGEs/sorted_expression_matrix.csv data/r
 ```
 
 Explain output
+
 
 ### Data normalization and Differential expression analysis
 
@@ -312,16 +307,39 @@ The curation file can be retrieved from IPA by following [IPA - Generate curatio
 It is important that the curation file contains two columns named "Symbol" (containing the gene names of the URs) and "Location" (containing information about cellular location). 
 The URs which will be kept for inter-organ interactions by the code are those with "Location" == "Extracellular Space". 
 
-The output from this script consists of one file containing all inter- and intra-organ interactions, all_pos_curated_ligand_activity.txt (Fig 1)
+The output from this script consists of one file containing all inter- and intra-organ interactions, all_pos_curated_ligand_activity.txt, saved to 'dir.out' (see example output in Table 3).
 
-```{r}
+```{r, eval=FALSE}
+source('R/NicheNet_network_curation.R')
+all_ligand_activity <- read.table('./data/NicheNet_analysis/all_ligand_activity.txt', sep = '\t', header = T)
+cur <- read.table('./data/IPA/curation/curation_file.txt')
+head(cur)
+dir.out <- './data/NicheNet_analysis_curated'
+NicheNet_network_curation(all_ligand_activity, cur, dir.out)
+```
 
+```{r, include=TRUE, echo=FALSE}
+# Example output from DEG_sort_significant.R
+all_pos_curated_ligand_activity <- read.table('data/NicheNet_analysis_curated/all_pos_curated_ligand_activity.txt', header = T)
+all_pos_curated_ligand_activity <- all_pos_curated_ligand_activity[1:5,]
+for (i in 1:length(rownames(all_pos_curated_ligand_activity))){
+  all_pos_curated_ligand_activity$target[i] <- paste(sapply(strsplit(all_pos_curated_ligand_activity$target[i], '/'), head, 2), collapse = '/')
+  all_pos_curated_ligand_activity$target_weight[i] <- paste(sapply(strsplit(all_pos_curated_ligand_activity$target_weight[i], '/'), head, 2), collapse = '/')
+}
+knitr::kable(all_pos_curated_ligand_activity[1:5,], caption = "Table 3. Example output from NicheNet curation analysis.")
 ```
 
 
 ### Ranking of URs based on their downstream effect
 
-/codes/rank_by_targets_and_heatmap.R
+
+
+```{r, eval=FALSE}
+source('R/rank_by_targets_and_heatmap.R')
+
+
+```
+
 
 ### Connective Pathway Analysis
 

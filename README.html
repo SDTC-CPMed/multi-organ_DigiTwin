@@ -176,42 +176,49 @@ pre code {
 </div>
 
 
-<div id="scrna-seq-analysis-for-construction-of-mcdms-mo-mcdms-and-connective-pathway-analysis" class="section level1">
-<h1>scRNA-seq analysis for construction of MCDMs, MO-MCDMs, and Connective Pathway Analysis</h1>
-<div id="define-data-structure-and-input-files" class="section level2">
-<h2>Define data structure and input files</h2>
-<pre class="r"><code>if (dir.exists(&quot;data/IPA/curation&quot;)==FALSE){
-  dir.create(&quot;data/IPA/curation&quot;, recursive = T)
+<div id="project-title" class="section level1">
+<h1>Project title</h1>
+<div id="scrna-seq-analysis-for-construction-of-mcdms-mo-mcdms-and-connective-pathway-analysis" class="section level2">
+<h2>scRNA-seq analysis for construction of MCDMs, MO-MCDMs, and Connective Pathway Analysis</h2>
+<div id="define-data-structure-and-input-files" class="section level3">
+<h3>Define data structure and input files</h3>
+<pre class="r"><code>if (dir.exists(&quot;./data/IPA/curation&quot;)==FALSE){
+  dir.create(&quot;./data/IPA/curation&quot;, recursive = T)
 }
-if (dir.exists(&quot;data/sorted_DGEs&quot;)==FALSE){
-  dir.create(&quot;data/sorted_DGEs&quot;)
+if (dir.exists(&quot;./data/sorted_DGEs&quot;)==FALSE){
+  dir.create(&quot;./data/sorted_DGEs&quot;)
 }
-if (dir.exists(&quot;data/NicheNet_analysis_curated&quot;)==FALSE){
-  dir.create(&quot;data/NicheNet_analysis_curated&quot;)
+if (dir.exists(&quot;./data/NicheNet_analysis&quot;)==FALSE){
+  dir.create(&quot;./data/NicheNet_analysis&quot;)
 }
-if (dir.exists(&quot;data/clustering_and_celltype_identification&quot;)==FALSE){
-  dir.create(&quot;data/clustering_and_celltype_identification&quot;)
+if (dir.exists(&quot;./data/NicheNet_analysis_curated&quot;)==FALSE){
+  dir.create(&quot;./data/NicheNet_analysis_curated&quot;)
 }
-if (dir.exists(&quot;data/scVI_normalized&quot;)==FALSE){
-  dir.create(&quot;data/scVI_normalized&quot;)
+if (dir.exists(&quot;./data/clustering_and_celltype_identification&quot;)==FALSE){
+  dir.create(&quot;./data/clustering_and_celltype_identification&quot;)
+}
+if (dir.exists(&quot;./data/scVI_normalized&quot;)==FALSE){
+  dir.create(&quot;./data/scVI_normalized&quot;)
 }</code></pre>
 <p>The expected data input are five csv.gz matrices, one per organ, with cells over columns and genes over rows.</p>
 <pre class="r"><code>### Read data from GSE and save it to data/ 
 input_file = &quot;data/UMI_expression_matrix.txt.gz&quot;</code></pre>
 </div>
-<div id="quality-assessment-and-sorting" class="section level2">
-<h2>Quality assessment and sorting</h2>
+<div id="quality-assessment-and-sorting" class="section level3">
+<h3>Quality assessment and sorting</h3>
 <p>To ensure good quality data for downstream analyses, it is recommended to remove poor quality cells and genes from the analyses. We performed these analyses on the input_file, for all the organs combined. We define and keep the good quality cells as those having a minimum of 400 transcripts, 200 genes, and less than 20% mitochondrial genes. The good quality genes kept were defined as those being identified in at least 1% of the cells.</p>
 <p>Due to the risk of duplicates in the library resulting in two or more cells sharing a cell barcode, it is also recommend to remove outliers. Based on empirical evaluation of the distribution an overestimation of transcripts count over the cells, we removed all cells with &gt;6000 transcripts.</p>
 <p>The output file is saved in data/sorted_DEGs.</p>
 <pre class="r"><code>source(&#39;R/sc_data_quality_sorting.R&#39;)
 sc_data_quality_sorting(input_file)</code></pre>
+</div>
 <div id="clustering-and-cell-type-identification-by-leidens-algorithm" class="section level3">
 <h3>Clustering and cell type identification by Leiden’s algorithm</h3>
-<pre class="bash"><code>#module add anaconda3
-#source activate dca
-python3 Python/ConvertReferencesSandra.ipynb
-#source deactivate</code></pre>
+<p>Explain input file format and cell type naming</p>
+<p>For this script to work properly, the cells need to be named according to the following format; ‘[tissue/organ]_[project]_[disease group][group number]_[cellID]’, where ‘tissue/organ’, ‘disease group’, and ‘disease group’ + ‘group number’ will be used for coloring of the clusters and/or cell classification information for the output file. [disease group] should be written as “H” = Healthy or “S” = Sick. Example: “Lung_CIA_H6_GTTAAGCATTAT”.</p>
+<pre class="bash"><code>python Python/celltyping.py data/sorted_DGEs/sorted_expression_matrix.csv data/references/ReferenceDataMouse.csv 1.0
+# The first two arguments refers to the single cell and bulk input data respectively and the third argument is the resolution parameter.  </code></pre>
+<p>Explain output</p>
 </div>
 <div id="data-normalization-and-differential-expression-analysis" class="section level3">
 <h3>Data normalization and Differential expression analysis</h3>
@@ -457,14 +464,120 @@ write.csv(clusts, paste(dir.clust, &#39;/cluster_ids.csv&#39;, sep = &#39;&#39;)
 <p>Note: that the interactions between organs in these files are not yet curated only to include URs secreated in blood</p>
 <pre class="r"><code>source(&#39;R/NicheNet_analysis.R&#39;)
 dir.data &lt;- &#39;./data/scVI_normalized&#39;
-exprdata &lt;- read.csv(list.files(dir.data, pattern = &#39;normalized&#39;, full.names = T), row.names = 1)
+exprdata_in &lt;- read.csv(list.files(dir.data, pattern = &#39;normalized&#39;, full.names = T), row.names = 1)
 dir.clust &lt;- &#39;./data/clustering_and_celltype_identification&#39;
 clusts &lt;- read.csv(list.files(dir.clust, pattern = &#39;^cluster_ids&#39;, full.names = T))
-orth &lt;- read.csv(&#39;./data/orthologous_translation_file.txt)</code></pre>
+orth &lt;- read.table(&#39;./data/orthologous_translation_file.txt&#39;, header = T)
+DEGs_in &lt;- read.csv(&#39;./data/DEG_analysis/sick_vs_healthy/change_mode/subset_significant/DEGs_Sick_vs_Healthy.csv&#39;)
+dir.out &lt;- &#39;./data/NicheNet_analysis&#39;
+
+# Get ligand-target matrix
+ligand_target &lt;- readRDS(url(&quot;https://zenodo.org/record/3260758/files/ligand_target_matrix.rds&quot;)) # targets = rows, ligands = columns
+# Get ligand-receptor interactions
+lr_network = as.matrix(readRDS(url(&quot;https://zenodo.org/record/3260758/files/lr_network.rds&quot;)))
+
+NicheNet_analysis_main(exprdata=exprdata_in, clusts, orth, DEGs=DEGs_in, dir.out, ligand_target, lr_network)</code></pre>
 <p>To curate the inter-organ interactions, only to include interactions through URs secreted in blood, and to sort out the strongest interactions (PCC &gt; 0) considered for further analyses we ran NicheNet_network_curation.R. As input to this script is the all_ligand_activity.txt output from NicheNet_analysis.R, and a curation file (eg., data/IPA/curation/curation_file.txt) containing information about the cellular location of each UR.</p>
 <p>The curation file can be retrieved from IPA by following <a href="#generate-curation-file">IPA - Generate curation file</a></p>
 <p>It is important that the curation file contains two columns named “Symbol” (containing the gene names of the URs) and “Location” (containing information about cellular location). The URs which will be kept for inter-organ interactions by the code are those with “Location” == “Extracellular Space”.</p>
-<p>The output from this script consists of one file containing all inter- and intra-organ interactions, all_pos_curated_ligand_activity.txt (Fig 1)</p>
+<p>The output from this script consists of one file containing all inter- and intra-organ interactions, all_pos_curated_ligand_activity.txt, saved to ‘dir.out’ (see example output in Table 3).</p>
+<pre class="r"><code>source(&#39;R/NicheNet_network_curation.R&#39;)
+all_ligand_activity &lt;- read.table(&#39;./data/NicheNet_analysis/all_ligand_activity.txt&#39;, sep = &#39;\t&#39;, header = T)
+cur &lt;- read.table(&#39;./data/IPA/curation/curation_file.txt&#39;)
+head(cur)
+dir.out &lt;- &#39;./data/NicheNet_analysis_curated&#39;
+NicheNet_network_curation(all_ligand_activity, cur, dir.out)</code></pre>
+<table style="width:100%;">
+<caption>Table 3. Example output from NicheNet curation analysis.</caption>
+<colgroup>
+<col width="7%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="9%" />
+<col width="24%" />
+<col width="14%" />
+<col width="9%" />
+<col width="8%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">test_ligand</th>
+<th align="right">auroc</th>
+<th align="right">aupr</th>
+<th align="right">pearson</th>
+<th align="left">target</th>
+<th align="left">target_weight</th>
+<th align="left">Sender</th>
+<th align="left">Target</th>
+<th align="left">Sender_tissue</th>
+<th align="left">Target_tissue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">IL1B</td>
+<td align="right">0.4882518</td>
+<td align="right">0.1283566</td>
+<td align="right">0.0551193</td>
+<td align="left">ADAM15/ADAMTS4</td>
+<td align="left">0.00498984755065295/0.0062124402077904</td>
+<td align="left">Dendritic-cells_Spleen</td>
+<td align="left">NK-cells_Spleen</td>
+<td align="left">Spleen</td>
+<td align="left">Spleen</td>
+</tr>
+<tr class="even">
+<td align="left">IL1B</td>
+<td align="right">0.4882518</td>
+<td align="right">0.1283566</td>
+<td align="right">0.0551193</td>
+<td align="left">ADAM15/ADAMTS4</td>
+<td align="left">0.00498984755065295/0.0062124402077904</td>
+<td align="left">Erythrocytes_Spleen</td>
+<td align="left">NK-cells_Spleen</td>
+<td align="left">Spleen</td>
+<td align="left">Spleen</td>
+</tr>
+<tr class="odd">
+<td align="left">IL1B</td>
+<td align="right">0.4882518</td>
+<td align="right">0.1283566</td>
+<td align="right">0.0551193</td>
+<td align="left">ADAM15/ADAMTS4</td>
+<td align="left">0.00498984755065295/0.0062124402077904</td>
+<td align="left">Granulocytes_Spleen</td>
+<td align="left">NK-cells_Spleen</td>
+<td align="left">Spleen</td>
+<td align="left">Spleen</td>
+</tr>
+<tr class="even">
+<td align="left">DSC3</td>
+<td align="right">0.5490886</td>
+<td align="right">0.1188862</td>
+<td align="right">0.0548031</td>
+<td align="left">COMP/FLNB</td>
+<td align="left">0.00134983546675245/0.00136002502009095</td>
+<td align="left">B-cells_Spleen</td>
+<td align="left">B-cells_Spleen</td>
+<td align="left">Spleen</td>
+<td align="left">Spleen</td>
+</tr>
+<tr class="odd">
+<td align="left">DSC3</td>
+<td align="right">0.5490886</td>
+<td align="right">0.1188862</td>
+<td align="right">0.0548031</td>
+<td align="left">COMP/FLNB</td>
+<td align="left">0.00134983546675245/0.00136002502009095</td>
+<td align="left">Dendritic-cells_Spleen</td>
+<td align="left">B-cells_Spleen</td>
+<td align="left">Spleen</td>
+<td align="left">Spleen</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="ranking-of-urs-based-on-their-downstream-effect" class="section level3">
 <h3>Ranking of URs based on their downstream effect</h3>

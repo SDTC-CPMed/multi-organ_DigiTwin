@@ -1,4 +1,16 @@
-rm(list=ls())
+# Sandra Lilja
+# R version 4.0.4
+#'
+#' Rank the URs based on their downstream effect, and create heatmap of the ranked URs. 
+#' 
+#' @param 
+#' @param 
+#' @param 
+#' 
+#' @export
+#'
+
+
 library(dplyr)
 library("pheatmap")
 
