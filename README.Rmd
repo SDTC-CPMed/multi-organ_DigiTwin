@@ -35,6 +35,9 @@ if (dir.exists("./data/clustering_and_celltype_identification")==FALSE){
 if (dir.exists("./data/scVI_normalized")==FALSE){
   dir.create("./data/scVI_normalized")
 }
+if (dir.exists("./data/rank_by_targets")==FALSE){
+  dir.create("./data/UR_ranking_by_target_effect")
+}
 ```
 
 The expected data input are five csv.gz matrices, one per organ, with cells over columns and genes over rows.
@@ -312,8 +315,7 @@ The output from this script consists of one file containing all inter- and intra
 ```{r, eval=FALSE}
 source('R/NicheNet_network_curation.R')
 all_ligand_activity <- read.table('./data/NicheNet_analysis/all_ligand_activity.txt', sep = '\t', header = T)
-cur <- read.table('./data/IPA/curation/curation_file.txt')
-head(cur)
+cur <- read.table('./data/IPA/curation/curation_file.txt', header = T)
 dir.out <- './data/NicheNet_analysis_curated'
 NicheNet_network_curation(all_ligand_activity, cur, dir.out)
 ```
@@ -329,17 +331,26 @@ for (i in 1:length(rownames(all_pos_curated_ligand_activity))){
 knitr::kable(all_pos_curated_ligand_activity[1:5,], caption = "Table 3. Example output from NicheNet curation analysis.")
 ```
 
-
 ### Ranking of URs based on their downstream effect
 
+The URs predicted to regulate the disease-associated changes in intra-organ interactions were ranked based on;
+1. the total number of downstream genes of each UR in all cell types and organs and 
+2. their respective number of targeted cell types and organs. 
 
+The output from this script consists of one matrix ('UR-ranking_N_target-genes_matrix_intra-interactions.csv') and one heatmap ('heatmap_UR-ranking_intra-interactions.pdf', Figure 3), showing number of downstream genes for each UR in each cell type and organ.
 
 ```{r, eval=FALSE}
 source('R/rank_by_targets_and_heatmap.R')
+dir.out <- './data/UR_ranking_by_target_effect'
+targets <- read.table('data/NicheNet_analysis_curated/all_pos_curated_ligand_activity.txt', header = T)
+ann_colors_in <- read.table('./data/references/CellType_and_Tissue_colors.txt', header = T)
 
-
+rank_by_targets_and_heatmap(targets, ints = 'intra', dir.out, ann_colors_in = ann_colors_in)
 ```
 
+![Figure 3. Heatmap showing the number of target genes (red gradient) of the rank-ordered URs (columns, top-ranked to the left) in the different cell types and organs (rows).If the UR has no targets in a given cell type and organ, the box is white.](./data/UR_ranking_by_target_effect/heatmap_UR-ranking_intra-interactions.png){width=65%}
+
+This code can also be used for ranking of URs involved in inter-organ interactions, all interactions, or for individual organs separately, by specifying the different parameters; 'ints': (str) inter, intra, or all, and 'Tis': (str) all (default), Joint, Lung, Muscle, Skin, or Spleen. The parameter 'ann_colors_in' is also optional, for specifying preferred color scheme for cell types and organs.    
 
 ### Connective Pathway Analysis
 

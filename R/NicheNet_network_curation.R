@@ -14,28 +14,6 @@
 
 library(dplyr)
 
-
-# # define directories and file input
-# dir.data <- './data/NicheNet_analysis'
-# curation_file <- './data/IPA/curation/curation_file.txt'
-# dir.out <- './data/NicheNet_analysis_curated'
-# # dir.home <- getwd()
-# # dir.data <- paste(dir.home, '/results/NicheNet_analysis/cluster_ids_fromOleg_06_29_CellType/scVI_change', sep = '')
-# # curation_file <- paste(dir.home, '/results/IPA/cluster_ids_fromOleg_06_29_CellType/scVI_change/results/inter-tissue_interaction_sorting/aextra2_fix.txt', sep = '')
-# # dir.out <- paste(dir.home, '/results/postNicheNet_analysis/cluster_ids_fromOleg_06_29_CellType/scVI_change', sep = '')
-# if (dir.exists(dir.out)==FALSE){
-#   dir.create(dir.out, recursive = T)
-#   print('dir.out was created')
-# }
-# 
-# # Load the data
-# all_ligand_activity <- read.table(paste(dir.data, "/all_ligand_activity.txt", sep = ''), sep = '\t', header = T)
-# cur <- read.table(curation_file)
-# # cur <- cur[,3:4]
-# # colnames(cur) <- c('Symbol', 'Location')
-# # write.table(cur, curation_file, sep = '\t', row.names = F)
-# # head(cur)
-
 NicheNet_network_curation <- function(all_ligand_activity, cur, dir.out){
   # Ensure that all genes in interaction file are included in curation file
   if (length(which(unique(sort(all_ligand_activity$test_ligand)) %in% cur$Symbol == F))!= 0){
