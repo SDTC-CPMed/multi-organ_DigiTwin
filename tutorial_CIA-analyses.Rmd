@@ -2,7 +2,9 @@
 title: "CIA analyses"
 author: "Sandra Lilja, Martin Smelik, Danuta Gawel, Oleg Sysoev"
 date: "29/04/2022"
-output: html_document
+output: 
+  html_document:
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
@@ -14,31 +16,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Define data structure and input files
 
 ```{r, echo FALSE, warning=FALSE, eval=FALSE}
-
-if (dir.exists("./data/IPA/curation")==FALSE){
-  dir.create("./data/IPA/curation", recursive = T)
-}
-if (dir.exists("./data/sorted_DGEs")==FALSE){
-  dir.create("./data/sorted_DGEs")
-}
-if (dir.exists("./data/NicheNet_analysis")==FALSE){
-  dir.create("./data/NicheNet_analysis")
-}
-if (dir.exists("./data/NicheNet_analysis_curated")==FALSE){
-  dir.create("./data/NicheNet_analysis_curated")
-}
-if (dir.exists("./data/clustering_and_celltype_identification")==FALSE){
-  dir.create("./data/clustering_and_celltype_identification")
-}
-if (dir.exists("./data/scVI_normalized")==FALSE){
-  dir.create("./data/scVI_normalized")
-}
-if (dir.exists("./data/rank_by_targets")==FALSE){
-  dir.create("./data/UR_ranking_by_target_effect")
-}
-if (dir.exists("./'data/references/'")==FALSE){
-  dir.create("'./data/references/'")
-}
+dir.create("./data/IPA/curation", recursive = T)
+dir.create("'./data/references/'")
+dir.create("./data/sorted_DGEs")
+dir.create("./data/NicheNet_analysis")
+dir.create("./data/NicheNet_analysis_curated")
+dir.create("./data/clustering_and_celltype_identification")
+dir.create("./data/scVI_normalized")
+dir.create("./data/UR_ranking_by_target_effect")
 ```
 
 The expected data input is a csv.gz matrix, with cells over columns and genes over rows. The data from this study can be downloaded from 'add GEO-link', and we recommend saving them to the 'data' folder. 
@@ -312,7 +297,7 @@ and to sort out the strongest interactions (PCC > 0) considered for further anal
 we ran NicheNet_network_curation.R. As input to this script is the all_ligand_activity.txt output from NicheNet_analysis.R, 
 and a curation file (eg., data/IPA/curation/curation_file.txt) containing information about the cellular location of each UR. 
 
-The curation file can be retrieved from IPA by following [IPA - Generate curation file](#generate-curation-file)
+The curation file can be retrieved from IPA by following [IPA - Generate curation file](./tutorial_IPA-analyses.html)
 
 It is important that the curation file contains two columns named "Symbol" (containing the gene names of the URs) and "Location" (containing information about cellular location). 
 The URs which will be kept for inter-organ interactions by the code are those with "Location" == "Extracellular Space". 
@@ -364,6 +349,10 @@ This code can also be used for ranking of URs involved in inter-organ interactio
 ### Connective Pathway Analysis
 
 ## Identification of human orthologs to mouse gene symbols
+
+The human orthologs can be downloaded from [Ensembl](http://www.ensembl.org/biomart/martview) following [this guide](https://www.ensembl.info/2009/01/21/how-to-get-all-the-orthologous-genes-between-two-species/). 
+
+In the case of our analyses, we selected the "human genes (GRCh38.p13)" database from "Ensembl Genes 106", Downloaded June 6, 2020, and selected the mouse ortologs as suggested by the guide. The output file should contain the 'Gene.name' and 'Mouse.gene.name' columns. 
 
 # References
 [^Gayoso]: Gayoso, Adam, et al. "A Python library for probabilistic analysis of single-cell omics data." *Nature Biotechnology* 40.2: 163-166, doi:10.1038/s41587-021-01206-w (2022).

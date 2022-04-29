@@ -2,7 +2,9 @@
 title: "IMIDs analyses"
 author: "Martin Smelik, Danuta Gawel, Sandra Lilja"
 date: "29/04/2022"
-output: html_document
+output: 
+  html_document:
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
