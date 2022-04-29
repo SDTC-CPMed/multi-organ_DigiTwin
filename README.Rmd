@@ -5,8 +5,6 @@ date: "07/04/2022"
 output: html_document
 ---
 
-# Project title
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -43,7 +41,7 @@ if (dir.exists("./'data/references/'")==FALSE){
 }
 ```
 
-The expected data input are five csv.gz matrices, one per organ, with cells over columns and genes over rows.
+The expected data input is a csv.gz matrix, with cells over columns and genes over rows. The data from this study can be downloaded from 'add GEO-link', and we recommend saving them to the 'data' folder. 
 
 ```{r}
 ### Read data from GSE and save it to data/ 
@@ -66,7 +64,6 @@ The output file is saved in data/sorted_DEGs.
 source('R/sc_data_quality_sorting.R')
 sc_data_quality_sorting(input_file)
 ```
-
 
 ### Clustering and cell type identification by Leiden's algorithm
 

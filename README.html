@@ -176,8 +176,6 @@ pre code {
 </div>
 
 
-<div id="project-title" class="section level1">
-<h1>Project title</h1>
 <div id="scrna-seq-analysis-for-construction-of-mcdms-mo-mcdms-and-connective-pathway-analysis" class="section level2">
 <h2>scRNA-seq analysis for construction of MCDMs, MO-MCDMs, and Connective Pathway Analysis</h2>
 <div id="define-data-structure-and-input-files" class="section level3">
@@ -206,7 +204,7 @@ if (dir.exists(&quot;./data/rank_by_targets&quot;)==FALSE){
 if (dir.exists(&quot;./&#39;data/references/&#39;&quot;)==FALSE){
   dir.create(&quot;&#39;./data/references/&#39;&quot;)
 }</code></pre>
-<p>The expected data input are five csv.gz matrices, one per organ, with cells over columns and genes over rows.</p>
+<p>The expected data input is a csv.gz matrix, with cells over columns and genes over rows. The data from this study can be downloaded from ‘add GEO-link’, and we recommend saving them to the ‘data’ folder.</p>
 <pre class="r"><code>### Read data from GSE and save it to data/ 
 input_file = &quot;data/UMI_expression_matrix.txt.gz&quot;</code></pre>
 </div>
@@ -675,7 +673,6 @@ rank_by_targets_and_heatmap(targets, ints = &#39;intra&#39;, dir.out, ann_colors
 </div>
 <div id="identification-of-human-orthologs-to-mouse-gene-symbols" class="section level2">
 <h2>Identification of human orthologs to mouse gene symbols</h2>
-</div>
 </div>
 <div id="references" class="section level1">
 <h1>References</h1>
