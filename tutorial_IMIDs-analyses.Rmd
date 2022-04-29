@@ -1,6 +1,6 @@
 ---
 title: "IMIDs analyses"
-author: "Martin Smelink, Danuta Gawel, Sandra Lilja"
+author: "Martin Smelik, Danuta Gawel, Sandra Lilja"
 date: "29/04/2022"
 output: html_document
 ---
