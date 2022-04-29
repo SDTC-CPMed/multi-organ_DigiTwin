@@ -1,7 +1,7 @@
 ---
-title: "CIA project"
-author: "Sandra Lilja, Martin Smelink, Xinxiu Lee, Danuta Gawel, Oleg Sysoev"
-date: "07/04/2022"
+title: "CIA analyses"
+author: "Sandra Lilja, Martin Smelink, Danuta Gawel, Oleg Sysoev"
+date: "29/04/2022"
 output: html_document
 ---
 
@@ -362,20 +362,6 @@ rank_by_targets_and_heatmap(targets, ints = 'intra', dir.out, ann_colors_in = an
 This code can also be used for ranking of URs involved in inter-organ interactions, all interactions, or for individual organs separately, by specifying the different parameters; 'ints': (str) inter, intra, or all, and 'Tis': (str) all (default), Joint, Lung, Muscle, Skin, or Spleen.    
 
 ### Connective Pathway Analysis
-
-## Meta analysis of 11 IMIDs
-
-### Differential expression analysis
-
-### ...
-
-## Ingenuity pathway analysis
-
-### Generate curation file
-
-### Pathway analysis
-
-### Prediction of upstream regulators (URs)
 
 ## Identification of human orthologs to mouse gene symbols
 
