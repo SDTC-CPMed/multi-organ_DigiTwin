@@ -38,6 +38,9 @@ if (dir.exists("./data/scVI_normalized")==FALSE){
 if (dir.exists("./data/rank_by_targets")==FALSE){
   dir.create("./data/UR_ranking_by_target_effect")
 }
+if (dir.exists("./'data/references/'")==FALSE){
+  dir.create("'./data/references/'")
+}
 ```
 
 The expected data input are five csv.gz matrices, one per organ, with cells over columns and genes over rows.
@@ -67,19 +70,33 @@ sc_data_quality_sorting(input_file)
 
 ### Clustering and cell type identification by Leiden's algorithm
 
-Explain input file format and cell type naming
+The cell types were then identified by clustering them together with a bulk reference data-set of known cell types using the Leiden's algorithm. This script has in-built denoising using the DCA autoencoder[^Eraslan] and thus takes the UMI-count data, as output by the [Quality assessment and sorting - script](#quality-assessment-and-sorting), as input.
 
-For this script to work properly, the cells need to be named according to the following format; '[tissue/organ]\_[project]\_[disease group][group number]\_[cellID]', where 'tissue/organ', 'disease group', and 'disease group' + 'group number' will be used for coloring of the clusters and/or cell classification information for the output file. [disease group] should be written as "H" = Healthy or "S" = Sick. Example: "Lung_CIA_H6_GTTAAGCATTAT".
+For this script to work properly, the cells in the input file need to be named according to the following format; '[tissue/organ]\_[project]\_[disease group][group number]\_[cellID]', where 'tissue/organ', 'disease group', and 'disease group' + 'group number' will be used for coloring of the clusters and/or cell classification information for the output file. [disease group] should be written as "H" = Healthy or "S" = Sick. Example: "Lung_CIA_H6_GTTAAGCATTAT".
 
+As reference for cell type identification, we used the mouse bulk expression data of sorted cell populations available in the R package SingleR (v1.0.6)[^Aran]. To extract the reference for cell typing, we ran the following R script. 
 
+```{r, eval=FALSE}
+source('R/SingleR_reference_retrieval.R')
+out_file <- 'data/references/ReferenceDataMouse.csv'
+SingleR_reference_retrieval(out_file)
+```
+
+To perform clustering and cell type identification, we ran the celltyping.py script as follows, where the first two arguments refers to the single cell and bulk input data respectively and the third argument is the resolution parameter. 
 
 ```{bash, eval=FALSE}
 python Python/celltyping.py data/sorted_DGEs/sorted_expression_matrix.csv data/references/ReferenceDataMouse.csv 1.0
-# The first two arguments refers to the single cell and bulk input data respectively and the third argument is the resolution parameter.  
 ```
 
-Explain output
+The output from this script consists of umap plots where the cells are colored based on cell type identity (Figure 1), mouse ID, and organ, and a 'cluster_ids.csv'-file containing the clustering and cell type information (Table 1), saved to 'data/clustering_and_celltype_identification'. 
 
+![Figure 1. UMAP with cells colored based on cell type identification.](./temp/umap.png){width=100%}
+
+```{r, include=TRUE, echo=FALSE}
+# Example output from DEG_sort_significant.R
+clusts <- read.csv('data/clustering_and_celltype_identification/cluster_ids.csv', row.names = 1)
+knitr::kable(clusts[1:5,1:3], caption = "Table 1. Example output from cell type identification.")
+```
 
 ### Data normalization and Differential expression analysis
 
@@ -109,7 +126,7 @@ The output from this code consists of one table of DEGs for each cell type and o
 
 Additionally, the normalized and latent data is saved to 'outdir' for downstream analyses.  
 
-We further subset these tables only to include significant DEGs, and columns relevant for downstream analyses. The output from this analysis consists of one table of significant DEGs for each input table of DEGs, which are saved to '[outdir_DEG]/subset_significant' (Table 1). Additionally, one matrix listing all DEGs is created and saved as '[outdir_DEG]/subset_significant/DEGs_Sick_vs_Healthy.csv', which will be later needed for analysis of [cell-cell interactions](#identification-of-cellular-interactions-and-mcdmmo-mcdm-construction).
+We further subset these tables only to include significant DEGs, and columns relevant for downstream analyses. The output from this analysis consists of one table of significant DEGs for each input table of DEGs, which are saved to '[outdir_DEG]/subset_significant' (Table 2). Additionally, one matrix listing all DEGs is created and saved as '[outdir_DEG]/subset_significant/DEGs_Sick_vs_Healthy.csv', which will be later needed for analysis of [cell-cell interactions](#identification-of-cellular-interactions-and-mcdmmo-mcdm-construction).
 
 ```{r, eval=FALSE}
 source('R/DEG_sort_significant.R')
@@ -122,7 +139,7 @@ DEG_sort_significant(DEG_files, outdir_DEG)
 ```{r, include=TRUE, echo=FALSE}
 # Example output from DEG_sort_significant.R
 Joint_Mac <- read.csv('data/DEG_analysis/sick_vs_healthy/change_mode/subset_significant/significant_DEGs_Sick_vs_Healthy_Macrophages_Joint.csv', row.names = 1)
-knitr::kable(Joint_Mac[1:5,], caption = "Table 1. Example output from differential expression analysis.")
+knitr::kable(Joint_Mac[1:5,], caption = "Table 2. Example output from differential expression analysis.")
 ```
 
 ### Cell type identification using marker genes
@@ -158,7 +175,7 @@ DEG_files <- list.files(outdir_DEG, full.names = TRUE, pattern = 'DEGs_')
 DEG_sort_significant(DEG_files, outdir_DEG)
 ```
 
-We then searched for known marker genes among the significantly upregulated DEGs in each cell type/cluster. The marker genes which we used for cell type verification/identification for each cluster can be seen in Table 2. 
+We then searched for known marker genes among the significantly upregulated DEGs in each cell type/cluster. The marker genes which we used for cell type verification/identification for each cluster can be seen in Table 3. 
 
 ```{r, include=TRUE, echo=FALSE}
 # Example output from DEG_sort_significant.R
@@ -181,7 +198,7 @@ marker_genes_table <- data.frame('cell type' = cellTypes,
                                  'marker genes' = marker_genes) 
 colnames(marker_genes_table) <- gsub('\\.', ' ', colnames(marker_genes_table))
 
-knitr::kable(marker_genes_table, caption = "Table 2. Marker genes used for cell type identification[^ref1]^,^ [^ref2]^,^ [^ref3]^,^ [^ref4]^,^ [^ref5]^,^ [^ref6]^,^ [^ref7]^,^ [^ref8]^,^ [^ref9]^,^ [^ref10]^,^ [^ref11]^,^ [^ref12]^,^ [^ref13]^,^ [^ref14]^,^ [^ref15]^,^ [^ref16].")
+knitr::kable(marker_genes_table, caption = "Table 3. Marker genes used for cell type identification[^ref1]^,^ [^ref2]^,^ [^ref3]^,^ [^ref4]^,^ [^ref5]^,^ [^ref6]^,^ [^ref7]^,^ [^ref8]^,^ [^ref9]^,^ [^ref10]^,^ [^ref11]^,^ [^ref12]^,^ [^ref13]^,^ [^ref14]^,^ [^ref15]^,^ [^ref16].")
 ```
 
 
@@ -219,7 +236,7 @@ plt
 dev.off()
 ```
 
-![Figure 1. Marker gene expression level over the different celltypes/clusters.](./data/clustering_and_celltype_identification/Violin_markerGenes_vs_CellTypes.png){width=65%}
+![Figure 2. Marker gene expression level over the different celltypes/clusters.](./data/clustering_and_celltype_identification/Violin_markerGenes_vs_CellTypes.png){width=65%}
 
 We then check in which cell types/clusters the marker genes are significantly differentially expressed. 
 
@@ -237,9 +254,9 @@ plt
 dev.off()
 ```
 
-![Figure 2. Heatmap indicating the significantly upregulated marker genes (1, red) vs not significantly upregulated marker genes (0, blue) in the different cell types/clusters.](./data/clustering_and_celltype_identification/heatmap_markerGenes.png){width=65%}
+![Figure 3. Heatmap indicating the significantly upregulated marker genes (1, red) vs not significantly upregulated marker genes (0, blue) in the different cell types/clusters.](./data/clustering_and_celltype_identification/heatmap_markerGenes.png){width=65%}
 
-Based on the distribution of marker genes, shown by Figure 1 and Figure 2, we verified the [previous cell type identification](#clustering-and-cell-type-identification-by-leidens-algorithm), and further identified the unknown cell types as Myocytes (Unknown0), Neutrophils (Unknown16), and Basal III cells (Unknown6) respectively. We update the file containing the clusters information, '/data/clustering_and_celltype_ideintification/cluster_ids.csv', to include these new cell type identities. 
+Based on the distribution of marker genes, shown by Figure 2 and Figure 3, we verified the [previous cell type identification](#clustering-and-cell-type-identification-by-leidens-algorithm), and further identified the unknown cell types as Myocytes (Unknown0), Neutrophils (Unknown16), and Basal III cells (Unknown6) respectively. We update the file containing the clusters information, '/data/clustering_and_celltype_ideintification/cluster_ids.csv', to include these new cell type identities. 
 
 ```{r, eval=FALSE}
 head(clusts)
@@ -303,7 +320,7 @@ The curation file can be retrieved from IPA by following [IPA - Generate curatio
 It is important that the curation file contains two columns named "Symbol" (containing the gene names of the URs) and "Location" (containing information about cellular location). 
 The URs which will be kept for inter-organ interactions by the code are those with "Location" == "Extracellular Space". 
 
-The output from this script consists of one file containing all inter- and intra-organ interactions, all_pos_curated_ligand_activity.txt, saved to 'dir.out' (see example output in Table 3).
+The output from this script consists of one file containing all inter- and intra-organ interactions, all_pos_curated_ligand_activity.txt, saved to 'dir.out' (see example output in Table 4).
 
 ```{r, eval=FALSE}
 source('R/NicheNet_network_curation.R')
@@ -321,7 +338,7 @@ for (i in 1:length(rownames(all_pos_curated_ligand_activity))){
   all_pos_curated_ligand_activity$target[i] <- paste(sapply(strsplit(all_pos_curated_ligand_activity$target[i], '/'), head, 2), collapse = '/')
   all_pos_curated_ligand_activity$target_weight[i] <- paste(sapply(strsplit(all_pos_curated_ligand_activity$target_weight[i], '/'), head, 2), collapse = '/')
 }
-knitr::kable(all_pos_curated_ligand_activity[1:5,], caption = "Table 3. Example output from NicheNet curation analysis.")
+knitr::kable(all_pos_curated_ligand_activity[1:5,], caption = "Table 4. Example output from NicheNet curation analysis.")
 ```
 
 ### Ranking of URs based on their downstream effect
@@ -332,7 +349,7 @@ The URs predicted to regulate the disease-associated changes in intra-organ inte
 
 As input to this script, the curated interaction output files from the [NicheNet analysis](#identification-of-cellular-interactions-and-mcdmmo-mcdm-construction) were used. We also specified the preferred color scheme with the optional 'ann_colors_in'-parameter. 
 
-The output from this script consists of one matrix ('UR-ranking_N_target-genes_matrix_intra-interactions.csv') and one heatmap ('heatmap_UR-ranking_intra-interactions.pdf', Figure 3), showing number of downstream genes for each UR in each cell type and organ.
+The output from this script consists of one matrix ('UR-ranking_N_target-genes_matrix_intra-interactions.csv') and one heatmap ('heatmap_UR-ranking_intra-interactions.pdf', Figure 4), showing number of downstream genes for each UR in each cell type and organ.
 
 ```{r, eval=FALSE}
 source('R/rank_by_targets_and_heatmap.R')
@@ -343,7 +360,7 @@ ann_colors_in <- read.table('./data/references/CellType_and_Tissue_colors.txt', 
 rank_by_targets_and_heatmap(targets, ints = 'intra', dir.out, ann_colors_in = ann_colors_in)
 ```
 
-![Figure 3. Heatmap showing the number of target genes (red gradient) of the rank-ordered URs (columns, top-ranked to the left) in the different cell types and organs (rows).If the UR has no targets in a given cell type and organ, the box is white.](./data/UR_ranking_by_target_effect/heatmap_UR-ranking_intra-interactions.png){width=65%}
+![Figure 4. Heatmap showing the number of target genes (red gradient) of the rank-ordered URs (columns, top-ranked to the left) in the different cell types and organs (rows).If the UR has no targets in a given cell type and organ, the box is white.](./data/UR_ranking_by_target_effect/heatmap_UR-ranking_intra-interactions.png){width=65%}
 
 This code can also be used for ranking of URs involved in inter-organ interactions, all interactions, or for individual organs separately, by specifying the different parameters; 'ints': (str) inter, intra, or all, and 'Tis': (str) all (default), Joint, Lung, Muscle, Skin, or Spleen.    
 
@@ -384,4 +401,5 @@ This code can also be used for ranking of URs involved in inter-organ interactio
 [^ref14]: Haensel, Daniel, et al. "Defining epidermal basal cell states during skin homeostasis and wound healing using single-cell transcriptomics." *Cell reports* 30.11: 3932-3947,  doi:10.1016/j.celrep.2020.02.091 (2020).
 [^ref15]: Volberding, Peter J., et al. "Suppressive neutrophils require PIM1 for metabolic fitness and survival during chronic viral infection." *Cell reports* 35.8: 109160, doi:10.1016/j.celrep.2021.109160 (2021).
 [^ref16]: Grieshaber-Bouyer, Ricardo, et al. "The neutrotime transcriptional signature defines a single continuum of neutrophils across biological compartments." *Nature communications* 12.1: 1-21, doi:10.1038/s41467-021-22973-9 (2021).
-
+[^Eraslan]: Eraslan, Gökcen, et al. "Single-cell RNA-seq denoising using a deep count autoencoder." *Nature communications* 10.1: 1-14, doi:10.1038/s41467-018-07931-2 (2019).
+[^Aran]: Aran, Dvir, et al. "Reference-based analysis of lung single-cell sequencing reveals a transitional profibrotic macrophage." *Nature immunology* 20.2: 163-172, doi:10.1038/s41590-018-0276-y (2019).
