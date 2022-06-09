@@ -4,3 +4,12 @@
 .Ruserdata
 *.Rproj
 temp/
+data/UR*
+data/N*
+data/s*
+data/r*
+data/D*
+data/c*
+Python/.*
+Python/figures
+
