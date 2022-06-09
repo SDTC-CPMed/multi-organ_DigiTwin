@@ -1,15 +1,15 @@
 
 %% read data GSE92415
-%URs = readtable('GSE92415/nonresponders_URs');
-%DEGs = readtable('GSE92415/GSE92415.untreatedNonResponder_vs_control_all_significant.csv');
-URs = readtable('../data/GSE92415/responders_URs');
-DEGs = readtable('../data/GSE92415/GSE92415.untreatedResponder_vs_control_all_significant.csv');
+%URs = readtable('../data/GSE92415/nonresponders_URs');
+%DEGs = readtable('../data/GSE92415/GSE92415.untreatedNonResponder_vs_control_all_significant.csv');
+URs = readtable('../data/GSE92415/nonresponders_URs');
+DEGs = readtable('../data/GSE92415/GSE92415.untreatedNonResponder_vs_control_all_significant.csv');
 
 %% read data GSE73661
-%URs = readtable('GSE73661/nonresponders_URs');
-%DEGs = readtable('GSE73661/GSE73661.IFX_untreatedNonResponder_vs_control_all_significant.csv');
-%URs = readtable('GSE73661/responders_URs');
-%DEGs = readtable('GSE73661/GSE73661.IFX_untreatedResponder_vs_control_all_significant.csv');
+%URs = readtable('../data/GSE73661/nonresponders_URs');
+%DEGs = readtable('../data/GSE73661/GSE73661.IFX_untreatedNonResponder_vs_control_all_significant.csv');
+%URs = readtable('../data/GSE73661/responders_URs');
+%DEGs = readtable('../data/GSE73661/GSE73661.IFX_untreatedResponder_vs_control_all_significant.csv');
 
 
 
@@ -25,9 +25,9 @@ URs = URs(strcmp(URs.Molecule_Type, "G-protein coupled receptor") |...
 
 
 %% load SPs %% add subprograms of program 1
-P2 = readtable('TreeStructure_nodes2_CLUSTER2_AID_noblood.txt');
+P2 = readtable('../data/Connective_pathway_analysis/TreeStructure_nodes2_CLUSTER2_AID_noblood.txt');
 P2.subprograms = cellfun(@(x) sprintf('2.%s',x), strtrim(cellstr(num2str(P2.subclusters))),'UniformOutput',0);
-P1 = readtable('TreeStructure_nodes2_AID_noblood.txt');
+P1 = readtable('../data/Connective_pathway_analysis/TreeStructure_nodes2_AID_noblood.txt');
 P1.subprograms = cellfun(@(x) sprintf('1.%s',x), strtrim(cellstr(num2str(P1.subclusters))),'UniformOutput',0);
 P = [P1(:,{'clustersGlobal','subprograms','AllMolecules'});P2(:,{'clustersGlobal','subprograms','AllMolecules'})];
 Programs = table(unique(P.subprograms),'variablenames',{'Program'});
@@ -81,11 +81,15 @@ FishertestR.OR = FOR;
 %% FDR correction over Programs 
 for i = 1:length(FishertestR.Pval(:,1))
     qval(i,:) = mafdr(FishertestR.Pval{i,:}, 'BHFDR',true);
+    or(i,:) = FishertestR.OR{i,:};
 end
 
 sTable = array2table(qval,'RowNames',SP.SP,'VariableNames',uUR);
+orTable = array2table(or, 'RowNames', SP.SP, 'VariableNames', uUR);
 
-%writetable(sTable,sprintf('GSE73661/UR_predictions_nonresponders'), 'WriteRowNames',true)
+writetable(sTable,sprintf('../data/GSE92415/UR_predictions_nonresponders'), 'WriteRowNames',true)
+
+writetable(orTable,sprintf('../data/GSE92415/UR_OR_nonresponders'), 'WriteRowNames',true)
 
 
 %% DEGs for SPs
@@ -94,7 +98,7 @@ sTable = array2table(qval,'RowNames',SP.SP,'VariableNames',uUR);
 
 sTable = array2table(spgenes_list,'RowNames',SP.SP);
 
-%writetable(sTable,sprintf('GSE73661/DEGs_SP'), 'WriteRowNames',true)
+writetable(sTable,sprintf('../data/GSE92415/DEGs_SP'), 'WriteRowNames',true)
 
 
 
