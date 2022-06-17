@@ -2,7 +2,7 @@
 
 ## Environemental set-up to run these scripts
 
-We have used R v4.1.1 and Python 3.7.6 for the development of these codes. 
+We have used R v4.1.1 and v4.0.4, Python 3.7.6, and MATLAB_R2019b for the development of these codes. 
 
 ### Quality assessment and sorting
 
@@ -55,4 +55,9 @@ dplyr 1.0.7
 pheatmap 1.0.12
 
 ### Connective Pathway Analysis
+
+Package versions:
+
+pheatmap 1.0.12
+stats 4.0.4
 

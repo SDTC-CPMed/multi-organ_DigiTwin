@@ -1,0 +1,66 @@
+---
+title: "Connective Pathway Analysis"
+author: "Danuta R. Gawel"
+date: "15/06/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Connective Pathway Analysis of mouse joints and muscle
+In order to organize all enriched patways found in any cell type in joint and muscle we performed Connective Patwhay Analyses (CPA).
+To systematically assess similarities and differences between pathways in the different groups (i.e. joint and muscle for CIA), we first clustered the pathways based on similarities of genes involved those pathways. To do so, the Jaccard-index was calculated, and values of 1-Jaccard-index used as distances for hierarchical clustering. The precalculation of Jaccard index was done in Matlab (see matlab markdown for details).
+Clustering was performed using the hclust() function in R with Ward’s method (i.e. parameter ward.D2). Only genes differentially expressed in at least one cell type (CIA) within each group (active and inactive disease organ) were considered for clustering. The dendrogram from the hierarchical clustering was next transformed into a tree-like structure, in which each node represents one pathway. 
+
+```{r,message=FALSE}
+source("R/CPA_UR_rankings_functions.R")
+
+MainPath = "data/CPA_InputFiles/"
+
+# load pre-computed Jaccard index matrix and pathway information plus define name which is to be used to save results:
+xx = as.matrix(read.csv(paste0(MainPath,'JaccardIndex_scRNAseq.csv'))) ##Jaccard Index
+pathinfo = read.table(paste(MainPath,'PathInfo_scRNAseq.csv',sep=''),sep=',',header=1)
+SAVENAME = 'scRNAseq'
+
+# run CPA:
+pathinfo = runCPA(xx,pathinfo,SAVENAME,1.365)
+# save results to file:
+write.table(file=paste(MainPath,'CPA_',SAVENAME,'_all_pathways.txt',sep=''),pathinfo,sep="\t", col.names=T, row.names=F, quote=F)
+
+# count the ratios of pathways showing same and opposing activation pattern in inflamed vs non-inflamed organ:
+ratios = count.same.and.opposing.activations(pathinfo)
+
+```
+
+## Connective Pathway Analysis of IMIDs
+Similarly for meta-analysis of IMIDs we have performed CPA:
+
+```{r, message=FALSE}
+# load pre-computed Jaccard index matrix and pathway information plus define name which is to be used to save results:
+xx = as.matrix(read.csv(paste(MainPath, 'JaccardIndex_IMID.csv',sep='')))
+pathinfo = read.table(paste(MainPath,'PathInfo_IMID.csv',sep=''),sep=',',header=1) 
+SAVENAME = 'IMID'
+
+pathinfo = runCPA(xx,pathinfo,SAVENAME,1.78)
+# save results to file:
+write.table(file=paste(MainPath,'CPA_',SAVENAME,'_all_pathways.txt',sep=''),pathinfo,sep="\t", col.names=T, row.names=F, quote=F)
+
+# count the ratios of pathways showing same and opposing activation pattern in inflamed vs non-inflamed organ:
+ratios = count.same.and.opposing.activations(pathinfo)
+```
+
+## Overlap of the CPA of IMIDs vs indyvidual IMIDs
+In order to get a better overview on which programs and sub-programs of CPA are enriched in indyvidual diseases, we calulated a Fisher Exact Test.
+To test if the programs (IMID_P1 and IMID_P2) derived from all analyzed IMIDs overlapped with programs from individual IMIDs in inflamed and non-inflamed organ sites, separately, we performed Fisher’s exact tests (right tailed), using all pathways in connective pathway analysis as a background, followed by correction for multiple testing using the Benjamini-Hochberg procedure. These analyses were repeated for IMID_subprograms (IMID_SPs) and subprograms from individual IMIDs. Disease pathways were defined as all pathways significantly enriched in a particular disease and inflammation state (IPA, p < 0.05). In case two or more datasets were representative of the same disease and condition (for example UC inflamed organs), pathway enrichment p values were combined with Fisher’s method. Enriched pathways were considered those whose combined p < 0.05
+```{r, message=FALSE}
+# prepare files to check overlap between programs and enriched pathways per IMID:
+Dis.Pval = read.table(paste(MainPath,'DieasesPathways_IMID.csv',sep=''),sep='\t',quote = "",header=T)
+OverlapingPaths = FindOverlapingPaths(Dis.Pval,pathinfo)
+
+```
+HERE COMES CODE TO PLOT THE OVERLAP: MARTIN HAS USED/ OR RECREATED THE CODE FOR THIS
+```{r}
+
+```
