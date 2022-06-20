@@ -8,9 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_knit$set(base.dir = "/Users/nunnlab/Desktop/GitHub/rgriff23.github.io/", base.url = "/")
-knitr::opts_chunk$set(fig.path = "projects/figure/", echo = TRUE)
-#knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## scRNA-seq analysis for construction of MCDMs, MO-MCDMs, and Connective Pathway Analysis
