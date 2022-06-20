@@ -3,14 +3,14 @@
 ### Define data structure and input files
 
 ``` r
-dir.create("./data/IPA/curation", recursive = T)
-dir.create("'./data/references/'")
-dir.create("./data/sorted_DGEs")
-dir.create("./data/NicheNet_analysis")
-dir.create("./data/NicheNet_analysis_curated")
-dir.create("./data/clustering_and_celltype_identification")
-dir.create("./data/scVI_normalized")
-dir.create("./data/UR_ranking_by_target_effect")
+dir.create("../data/IPA/curation", recursive = T)
+dir.create("'../data/references/'")
+dir.create("../data/sorted_DGEs")
+dir.create("../data/NicheNet_analysis")
+dir.create("../data/NicheNet_analysis_curated")
+dir.create("../data/clustering_and_celltype_identification")
+dir.create("../data/scVI_normalized")
+dir.create("../data/UR_ranking_by_target_effect")
 ```
 
 The expected data input is a csv.gz matrix, with cells over columns and
@@ -19,7 +19,7 @@ GEO-link’, and we recommend saving them to the ‘data’ folder.
 
 ``` r
 ### Read data from GSE and save it to data/ 
-input_file = "data/UMI_expression_matrix.txt.gz"
+input_file = "../data/UMI_expression_matrix.txt.gz"
 ```
 
 ### Quality assessment and sorting
@@ -41,7 +41,7 @@ transcripts.
 The output file is saved in data/sorted_DEGs.
 
 ``` r
-source('R/sc_data_quality_sorting.R')
+source('../R/sc_data_quality_sorting.R')
 sc_data_quality_sorting(input_file)
 ```
 
@@ -69,8 +69,8 @@ SingleR (v1.0.6)[2]. To extract the reference for cell typing, we ran
 the following R script.
 
 ``` r
-source('R/SingleR_reference_retrieval.R')
-out_file <- 'data/references/ReferenceDataMouse.csv'
+source('../R/SingleR_reference_retrieval.R')
+out_file <- '../data/references/ReferenceDataMouse.csv'
 SingleR_reference_retrieval(out_file)
 ```
 
@@ -80,7 +80,7 @@ the single cell and bulk input data respectively and the third argument
 is the resolution parameter.
 
 ``` bash
-python Python/celltyping.py data/sorted_DGEs/sorted_expression_matrix.csv data/references/ReferenceDataMouse.csv 1.0
+python Python/celltyping.py ../data/sorted_DGEs/sorted_expression_matrix.csv data/references/ReferenceDataMouse.csv 1.0
 ```
 
 The output from this script consists of umap plots where the cells are
@@ -90,7 +90,7 @@ information (Table 1), saved to
 ‘data/clustering_and_celltype_identification’.
 
 <figure>
-<img src="./temp/umap.png" style="width:100.0%" alt="Figure 1. UMAP with cells colored based on cell type identification." /><figcaption aria-hidden="true">Figure 1. UMAP with cells colored based on cell type identification.</figcaption>
+<img src="../vignettes/figures/umap.png" style="width:100.0%" alt="Figure 1. UMAP with cells colored based on cell type identification." /><figcaption aria-hidden="true">Figure 1. UMAP with cells colored based on cell type identification.</figcaption>
 </figure>
 
 |                          | CellType    | disease_group | tissue |
@@ -126,10 +126,10 @@ trained data provided in
 
 ``` bash
 # define in-/output directories and files
-infile=data/sorted_DGEs/sorted_expression_matrix.csv
-outdir=data/scVI_normalized/
-clust_file=data/clustering_and_celltype_identification/cluster_ids.csv
-outdir_DEG=data/DEG_analysis/sick_vs_healthy
+infile=../data/sorted_DGEs/sorted_expression_matrix.csv
+outdir=../data/scVI_normalized/
+clust_file=../data/clustering_and_celltype_identification/cluster_ids.csv
+outdir_DEG=../data/DEG_analysis/sick_vs_healthy
 mkdir -p $outdir_DEG
 mkdir -p $outdir_DEG/change_mode
 
@@ -137,7 +137,7 @@ mkdir -p $outdir_DEG/change_mode
 python Python/scVI_v0.7.1.py --infile $infile --outdir $outdir --n_epochs 400 --DEG_analysis --clust_file $clust_file --outdir_DEG $outdir_DEG --sort_column 1 3 --group_column 2 --use_batches --batch_id 0 2
 wait
 
-# to see all potential parameters for data normalization and differential expression analysis, run 'python Python/scVI_v0.7.1.py --help'
+# to see all potential parameters for data normalization and differential expression analysis, run 'python ../Python/scVI_v0.7.1.py --help'
 ```
 
 The output from this code consists of one table of DEGs for each cell
@@ -162,8 +162,8 @@ be later needed for analysis of [cell-cell
 interactions](#identification-of-cellular-interactions-and-mcdmmo-mcdm-construction).
 
 ``` r
-source('R/DEG_sort_significant.R')
-outdir_DEG <- 'data/DEG_analysis/sick_vs_healthy/change_mode'
+source('../R/DEG_sort_significant.R')
+outdir_DEG <- '../data/DEG_analysis/sick_vs_healthy/change_mode'
 DEG_files <- list.files(outdir_DEG, full.names = TRUE, pattern = 'DEGs_')
 # subset the DEGs
 DEG_sort_significant(DEG_files, outdir_DEG)
@@ -200,10 +200,10 @@ module add anaconda3
 source activate cia # if needed, define user-specific python environment
 
 # define in-/output directories and files
-infile=data/sorted_DGEs/sorted_expression_matrix.csv
-outdir=data/scVI_normalized/
-clust_file=data/clustering_and_celltype_identification/cluster_ids.csv
-outdir_DEG=data/DEG_analysis/cellTypeX_vs_allOtherCellTypes
+infile=../data/sorted_DGEs/sorted_expression_matrix.csv
+outdir=../data/scVI_normalized/
+clust_file=../data/clustering_and_celltype_identification/cluster_ids.csv
+outdir_DEG=../data/DEG_analysis/cellTypeX_vs_allOtherCellTypes
 mkdir -p $outdir_DEG
 mkdir -p $outdir_DEG/change_mode
 # Calculate DEGs for each cell type and organ between the cell type and all other cell types
@@ -216,8 +216,8 @@ p-values, as described
 [above](#data-normalization-and-differential-expression-analysis).
 
 ``` r
-source('R/DEG_sort_significant.R')
-outdir_DEG <- 'data/DEG_analysis/cellTypeX_vs_allOtherCellTypes'
+source('../R/DEG_sort_significant.R')
+outdir_DEG <- '../data/DEG_analysis/cellTypeX_vs_allOtherCellTypes'
 DEG_files <- list.files(outdir_DEG, full.names = TRUE, pattern = 'DEGs_')
 # subset the DEGs
 DEG_sort_significant(DEG_files, outdir_DEG)
@@ -271,9 +271,9 @@ First, we check the expression level of our chosen marker genes over the
 different cell types and unidentified clusters in the data.
 
 ``` r
-source('R/marker_gene_distribution.R')
-dir.data <- './data/scVI_normalized'
-dir.clust <- './data/clustering_and_celltype_identification'
+source('../R/marker_gene_distribution.R')
+dir.data <- '../data/scVI_normalized'
+dir.clust <- '../data/clustering_and_celltype_identification'
 clusts <- read.csv(list.files(dir.clust, pattern = '^cluster_ids', full.names = T))
 exprdata <- read.csv(list.files(dir.data, pattern = 'normalized', full.names = T), row.names = 1)
 
@@ -285,17 +285,17 @@ dev.off()
 ```
 
 <figure>
-<img src="./data/clustering_and_celltype_identification/Violin_markerGenes_vs_CellTypes.png" style="width:65.0%" alt="Figure 2. Marker gene expression level over the different celltypes/clusters." /><figcaption aria-hidden="true">Figure 2. Marker gene expression level over the different celltypes/clusters.</figcaption>
+<img src="../vignettes/figures/Violin_markerGenes_vs_CellTypes.png" style="width:65.0%" alt="Figure 2. Marker gene expression level over the different celltypes/clusters." /><figcaption aria-hidden="true">Figure 2. Marker gene expression level over the different celltypes/clusters.</figcaption>
 </figure>
 
 We then check in which cell types/clusters the marker genes are
 significantly differentially expressed.
 
 ``` r
-source('R/marker_gene_distribution.R')
-dir.clust <- './data/clustering_and_celltype_identification'
+source('../R/marker_gene_distribution.R')
+dir.clust <- '../data/clustering_and_celltype_identification'
 clusts <- read.csv(list.files(dir.clust, pattern = '^cluster_ids', full.names = T))
-dir.DE <- './data/DEG_analysis/cellTypeX_vs_allOtherCellTypes/change_mode/subset_significant'
+dir.DE <- '../data/DEG_analysis/cellTypeX_vs_allOtherCellTypes/change_mode/subset_significant'
 DE_data <- list.files(dir.DE)
 
 plt <- marker_gene_DE(DE_data, dir.DE, clusts, marker_genes)
@@ -306,7 +306,7 @@ dev.off()
 ```
 
 <figure>
-<img src="./data/clustering_and_celltype_identification/heatmap_markerGenes.png" style="width:65.0%" alt="Figure 3. Heatmap indicating the significantly upregulated marker genes (1, red) vs not significantly upregulated marker genes (0, blue) in the different cell types/clusters." /><figcaption aria-hidden="true">Figure 3. Heatmap indicating the significantly upregulated marker genes (1, red) vs not significantly upregulated marker genes (0, blue) in the different cell types/clusters.</figcaption>
+<img src="../vignettes/figures/heatmap_markerGenes.png" style="width:65.0%" alt="Figure 3. Heatmap indicating the significantly upregulated marker genes (1, red) vs not significantly upregulated marker genes (0, blue) in the different cell types/clusters." /><figcaption aria-hidden="true">Figure 3. Heatmap indicating the significantly upregulated marker genes (1, red) vs not significantly upregulated marker genes (0, blue) in the different cell types/clusters.</figcaption>
 </figure>
 
 Based on the distribution of marker genes, shown by Figure 2 and Figure
@@ -377,14 +377,14 @@ Note: that the interactions between organs in these files are not yet
 curated only to include URs secreated in blood
 
 ``` r
-source('R/NicheNet_analysis.R')
-dir.data <- './data/scVI_normalized'
+source('../R/NicheNet_analysis.R')
+dir.data <- '../data/scVI_normalized'
 exprdata_in <- read.csv(list.files(dir.data, pattern = 'normalized', full.names = T), row.names = 1)
-dir.clust <- './data/clustering_and_celltype_identification'
+dir.clust <- '../data/clustering_and_celltype_identification'
 clusts <- read.csv(list.files(dir.clust, pattern = '^cluster_ids', full.names = T))
-orth <- read.table('./data/orthologous_translation_file.txt', header = T)
-DEGs_in <- read.csv('./data/DEG_analysis/sick_vs_healthy/change_mode/subset_significant/DEGs_Sick_vs_Healthy.csv')
-dir.out <- './data/NicheNet_analysis'
+orth <- read.table('../data/orthologous_translation_file.txt', header = T)
+DEGs_in <- read.csv('../data/DEG_analysis/sick_vs_healthy/change_mode/subset_significant/DEGs_Sick_vs_Healthy.csv')
+dir.out <- '../data/NicheNet_analysis'
 
 # Get ligand-target matrix
 ligand_target <- readRDS(url("https://zenodo.org/record/3260758/files/ligand_target_matrix.rds")) # targets = rows, ligands = columns
@@ -399,11 +399,11 @@ through URs secreted in blood, and to sort out the strongest
 interactions (PCC \> 0) considered for further analyses we ran
 NicheNet_network_curation.R. As input to this script is the
 all_ligand_activity.txt output from NicheNet_analysis.R, and a curation
-file (eg., data/IPA/curation/curation_file.txt) containing information
-about the cellular location of each UR.
+file (eg., ../data/IPA/curation/curation_file.txt) containing
+information about the cellular location of each UR.
 
 The curation file can be retrieved from IPA by following [IPA - Generate
-curation file](./tutorial_IPA-analyses.html)
+curation file](./IPA-analyses.html)
 
 It is important that the curation file contains two columns named
 “Symbol” (containing the gene names of the URs) and “Location”
@@ -416,10 +416,10 @@ and intra-organ interactions, all_pos_curated_ligand_activity.txt, saved
 to ‘dir.out’ (see example output in Table 4).
 
 ``` r
-source('R/NicheNet_network_curation.R')
-all_ligand_activity <- read.table('./data/NicheNet_analysis/all_ligand_activity.txt', sep = '\t', header = T)
-cur <- read.table('./data/IPA/curation/curation_file.txt', header = T)
-dir.out <- './data/NicheNet_analysis_curated'
+source('../R/NicheNet_network_curation.R')
+all_ligand_activity <- read.table('../data/NicheNet_analysis/all_ligand_activity.txt', sep = '\t', header = T)
+cur <- read.table('../data/IPA/curation/curation_file.txt', header = T)
+dir.out <- '../data/NicheNet_analysis_curated'
 NicheNet_network_curation(all_ligand_activity, cur, dir.out)
 ```
 
@@ -452,10 +452,10 @@ heatmap (‘heatmap_UR-ranking_intra-interactions.pdf’, Figure 4), showing
 number of downstream genes for each UR in each cell type and organ.
 
 ``` r
-source('R/rank_by_targets_and_heatmap.R')
-dir.out <- './data/UR_ranking_by_target_effect'
-targets <- read.table('data/NicheNet_analysis_curated/all_pos_curated_ligand_activity.txt', header = T)
-ann_colors_in <- read.table('./data/references/CellType_and_Tissue_colors.txt', header = T)
+source('../R/rank_by_targets_and_heatmap.R')
+dir.out <- '../data/UR_ranking_by_target_effect'
+targets <- read.table('../data/NicheNet_analysis_curated/all_pos_curated_ligand_activity.txt', header = T)
+ann_colors_in <- read.table('../data/references/CellType_and_Tissue_colors.txt', header = T)
 
 rank_by_targets_and_heatmap(targets, ints = 'intra', dir.out, ann_colors_in = ann_colors_in)
 ```
