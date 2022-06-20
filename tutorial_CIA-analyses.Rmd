@@ -10,6 +10,9 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+<!-- github markdown built using 
+rmarkdown::render("vignettes/differential_nichenet_pEMT.Rmd", output_format = "github_document")
+-->
 
 ## scRNA-seq analysis for construction of MCDMs, MO-MCDMs, and Connective Pathway Analysis
 
