@@ -10,6 +10,7 @@ data/s*
 data/r*
 data/D*
 data/c*
+data/CPA*
 Python/.*
 Python/figures
 
