@@ -70,7 +70,7 @@ To perform clustering and cell type identification, we ran the celltyping.py scr
 python Python/celltyping.py ../data/sorted_DGEs/sorted_expression_matrix.csv data/references/ReferenceDataMouse.csv 1.0
 ```
 
-The output from this script consists of umap plots where the cells are colored based on cell type identity (Figure 1), mouse ID, and organ, and a 'cluster_ids.csv'-file containing the clustering and cell type information (Table 1), saved to 'data/clustering_and_celltype_identification'. 
+The output from this script consists of umap plots where the cells are colored based on cell type identity (Figure 1), mouse ID, and organ, and a 'cluster_ids.csv'-file containing the clustering and cell type information (Table 1), saved to '../data/clustering_and_celltype_identification'. 
 
 ![Figure 1. UMAP with cells colored based on cell type identification.](../vignettes/figures/umap.png){width=100%}
 
@@ -86,7 +86,7 @@ For each cell type in each organ, we calculate the DEGs between sick and healthy
 
 Note that the training will produce somewhat different output from each run, so in case the analyses need to be reproduced, the trained data is saved to 'outdir', '/full_posterior_400/model_params'. If this directory exists, the trained data will be loaded from there. As the training can be time consuming, this also saves computational time. Note also that the training results will depend on the previous set-ups, and if any of the parameters 'n_epochs', 'use_batches', or 'batch_id' are changed, the training need to be re-run.  
 
-** Not provided yet, too big?** To reproduce our results, use the trained data provided in 'data/scVI_normalized/full_posterior_400/model_params'.
+** Not provided yet, too big?** To reproduce our results, use the trained data provided in '../data/scVI_normalized/full_posterior_400/model_params'.
 
 ```{bash, eval=FALSE}
 # define in-/output directories and files
@@ -238,7 +238,7 @@ dev.off()
 
 ![Figure 3. Heatmap indicating the significantly upregulated marker genes (1, red) vs not significantly upregulated marker genes (0, blue) in the different cell types/clusters.](../vignettes/figures/heatmap_markerGenes.png){width=65%}
 
-Based on the distribution of marker genes, shown by Figure 2 and Figure 3, we verified the [previous cell type identification](#clustering-and-cell-type-identification-by-leidens-algorithm), and further identified the unknown cell types as Myocytes (Unknown0), Neutrophils (Unknown16), and Basal III cells (Unknown6) respectively. We update the file containing the clusters information, '/data/clustering_and_celltype_ideintification/cluster_ids.csv', to include these new cell type identities. 
+Based on the distribution of marker genes, shown by Figure 2 and Figure 3, we verified the [previous cell type identification](#clustering-and-cell-type-identification-by-leidens-algorithm), and further identified the unknown cell types as Myocytes (Unknown0), Neutrophils (Unknown16), and Basal III cells (Unknown6) respectively. We update the file containing the clusters information, '../data/clustering_and_celltype_ideintification/cluster_ids.csv', to include these new cell type identities. 
 
 ```{r, eval=FALSE}
 head(clusts)
@@ -263,7 +263,7 @@ The input files to run NicheNet_analysis.R, are;
 
 * the normalized expression data. Output from [scVI_v0.7.1.py](#data-normalization-and-differential-expression-analysis)
 * the cell type identification file. Output from [cell type analysis script](#clustering-and-cell-type-identification-by-leidens-algorithm) and modified in [Cell type identification using marker genes](#cell-type-identification-using-marker-genes)
-* a translation file of human orthologs, as generated under [Identification of human orthologs to mouse gene symbols](#identification-of-human-orthologs-to-mouse-gene-symbols). For reproduction of our analyses, use 'data/orthologous_translation_file.txt'.
+* a translation file of human orthologs, as generated under [Identification of human orthologs to mouse gene symbols](#identification-of-human-orthologs-to-mouse-gene-symbols). For reproduction of our analyses, use '../data/orthologous_translation_file.txt'.
 * a matrix listing all DEGs for each cell type and organ combination, with celltype_organ over columns, as output from the [differential expression analysis](#data-normalization-and-differential-expression-analysis), DEG_sort_significant.R.
 
 The code output one tab separated txt file per interacting cell type pair, within and between organs, 
@@ -342,7 +342,7 @@ ann_colors_in <- read.table('../data/references/CellType_and_Tissue_colors.txt',
 rank_by_targets_and_heatmap(targets, ints = 'intra', dir.out, ann_colors_in = ann_colors_in)
 ```
 
-![Figure 4. Heatmap showing the number of target genes (red gradient) of the rank-ordered URs (columns, top-ranked to the left) in the different cell types and organs (rows).If the UR has no targets in a given cell type and organ, the box is white.](./data/UR_ranking_by_target_effect/heatmap_UR-ranking_intra-interactions.png){width=65%}
+![Figure 4. Heatmap showing the number of target genes (red gradient) of the rank-ordered URs (columns, top-ranked to the left) in the different cell types and organs (rows).If the UR has no targets in a given cell type and organ, the box is white.](../vignettes/figures/heatmap_UR-ranking_intra-interactions.png){width=65%}
 
 This code can also be used for ranking of URs involved in inter-organ interactions, all interactions, or for individual organs separately, by specifying the different parameters; 'ints': (str) inter, intra, or all, and 'Tis': (str) all (default), Joint, Lung, Muscle, Skin, or Spleen.    
 

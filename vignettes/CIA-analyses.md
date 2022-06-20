@@ -87,7 +87,7 @@ The output from this script consists of umap plots where the cells are
 colored based on cell type identity (Figure 1), mouse ID, and organ, and
 a ‘cluster_ids.csv’-file containing the clustering and cell type
 information (Table 1), saved to
-‘data/clustering_and_celltype_identification’.
+‘../data/clustering_and_celltype_identification’.
 
 <figure>
 <img src="../vignettes/figures/umap.png" style="width:100.0%" alt="Figure 1. UMAP with cells colored based on cell type identification." /><figcaption aria-hidden="true">Figure 1. UMAP with cells colored based on cell type identification.</figcaption>
@@ -122,7 +122,7 @@ training need to be re-run.
 
 \*\* Not provided yet, too big?\*\* To reproduce our results, use the
 trained data provided in
-‘data/scVI_normalized/full_posterior_400/model_params’.
+‘../data/scVI_normalized/full_posterior_400/model_params’.
 
 ``` bash
 # define in-/output directories and files
@@ -315,7 +315,7 @@ identification](#clustering-and-cell-type-identification-by-leidens-algorithm),
 and further identified the unknown cell types as Myocytes (Unknown0),
 Neutrophils (Unknown16), and Basal III cells (Unknown6) respectively. We
 update the file containing the clusters information,
-‘/data/clustering_and_celltype_ideintification/cluster_ids.csv’, to
+‘../data/clustering_and_celltype_ideintification/cluster_ids.csv’, to
 include these new cell type identities.
 
 ``` r
@@ -355,7 +355,7 @@ The input files to run NicheNet_analysis.R, are;
     [Identification of human orthologs to mouse gene
     symbols](#identification-of-human-orthologs-to-mouse-gene-symbols).
     For reproduction of our analyses, use
-    ‘data/orthologous_translation_file.txt’.
+    ‘../data/orthologous_translation_file.txt’.
 -   a matrix listing all DEGs for each cell type and organ combination,
     with celltype_organ over columns, as output from the [differential
     expression
@@ -461,7 +461,7 @@ rank_by_targets_and_heatmap(targets, ints = 'intra', dir.out, ann_colors_in = an
 ```
 
 <figure>
-<img src="./data/UR_ranking_by_target_effect/heatmap_UR-ranking_intra-interactions.png" style="width:65.0%" alt="Figure 4. Heatmap showing the number of target genes (red gradient) of the rank-ordered URs (columns, top-ranked to the left) in the different cell types and organs (rows).If the UR has no targets in a given cell type and organ, the box is white." /><figcaption aria-hidden="true">Figure 4. Heatmap showing the number of target genes (red gradient) of the rank-ordered URs (columns, top-ranked to the left) in the different cell types and organs (rows).If the UR has no targets in a given cell type and organ, the box is white.</figcaption>
+<img src="../vignettes/figures/heatmap_UR-ranking_intra-interactions.png" style="width:65.0%" alt="Figure 4. Heatmap showing the number of target genes (red gradient) of the rank-ordered URs (columns, top-ranked to the left) in the different cell types and organs (rows).If the UR has no targets in a given cell type and organ, the box is white." /><figcaption aria-hidden="true">Figure 4. Heatmap showing the number of target genes (red gradient) of the rank-ordered URs (columns, top-ranked to the left) in the different cell types and organs (rows).If the UR has no targets in a given cell type and organ, the box is white.</figcaption>
 </figure>
 
 This code can also be used for ranking of URs involved in inter-organ
