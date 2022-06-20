@@ -3,8 +3,8 @@ title: "CIA analyses"
 author: "Sandra Lilja, Martin Smelik, Danuta Gawel, Oleg Sysoev"
 date: "29/04/2022"
 output: 
-  html_document:
-    toc: true
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE}
