@@ -10,6 +10,8 @@ data/s*
 data/r*
 data/D*
 data/c*
+data/CPA*
+data/UMI_expression_matrix*
 Python/.*
 Python/figures
 
