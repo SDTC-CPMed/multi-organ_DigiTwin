@@ -297,7 +297,7 @@ and to sort out the strongest interactions (PCC > 0) considered for further anal
 we ran NicheNet_network_curation.R. As input to this script is the all_ligand_activity.txt output from NicheNet_analysis.R, 
 and a curation file (eg., ../data/IPA/curation/curation_file.txt) containing information about the cellular location of each UR. 
 
-The curation file can be retrieved from IPA by following [IPA - Generate curation file](./IPA-analyses.html)
+The curation file can be retrieved from IPA by following [IPA - Generate curation file](./IPA-analyses.md)
 
 It is important that the curation file contains two columns named "Symbol" (containing the gene names of the URs) and "Location" (containing information about cellular location). 
 The URs which will be kept for inter-organ interactions by the code are those with "Location" == "Extracellular Space". 
@@ -349,7 +349,7 @@ This code can also be used for ranking of URs involved in inter-organ interactio
 ### Connective Pathway Analysis
 
 In order to organize all enriched patways found in any cell type in joint and muscle we performed Connective Patwhay Analyses (CPA).
-To systematically assess similarities and differences between pathways in the different groups (i.e. joint and muscle), we first clustered the pathways based on similarities of genes involved in those pathways. To do so, the Jaccard-index was calculated, and values of 1-Jaccard-index used as distances for hierarchical clustering. The precalculation of Jaccard index was done in Matlab (see [matlab markdown][../MATLAB/Prepare_files_for_CPA_matlab_markdown.html] for details).
+To systematically assess similarities and differences between pathways in the different groups (i.e. joint and muscle), we first clustered the pathways based on similarities of genes involved in those pathways. To do so, the Jaccard-index was calculated, and values of 1-Jaccard-index used as distances for hierarchical clustering. The precalculation of Jaccard index was done in Matlab (see [matlab markdown](../MATLAB/Prepare_files_for_CPA_matlab_markdown.html) for details).
 Clustering was performed using the hclust() function in R with Ward’s method (i.e. parameter ward.D2). Only genes differentially expressed in at least one cell type (CIA) within each group (active and inactive disease organ) were considered for clustering. The dendrogram from the hierarchical clustering was next transformed into a tree-like structure, in which each node represents one pathway. 
 
 ```{r,message=FALSE}

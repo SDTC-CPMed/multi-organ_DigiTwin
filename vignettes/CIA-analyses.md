@@ -403,7 +403,7 @@ file (eg., ../data/IPA/curation/curation_file.txt) containing
 information about the cellular location of each UR.
 
 The curation file can be retrieved from IPA by following [IPA - Generate
-curation file](./IPA-analyses.html)
+curation file](./IPA-analyses.md)
 
 It is important that the curation file contains two columns named
 “Symbol” (containing the gene names of the URs) and “Location”
@@ -478,8 +478,8 @@ the different groups (i.e. joint and muscle), we first clustered the
 pathways based on similarities of genes involved in those pathways. To
 do so, the Jaccard-index was calculated, and values of 1-Jaccard-index
 used as distances for hierarchical clustering. The precalculation of
-Jaccard index was done in Matlab (see \[matlab
-markdown\]\[../MATLAB/Prepare_files_for_CPA_matlab_markdown.html\] for
+Jaccard index was done in Matlab (see [matlab
+markdown](../MATLAB/Prepare_files_for_CPA_matlab_markdown.html) for
 details). Clustering was performed using the hclust() function in R with
 Ward’s method (i.e. parameter ward.D2). Only genes differentially
 expressed in at least one cell type (CIA) within each group (active and
