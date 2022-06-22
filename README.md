@@ -2,7 +2,7 @@
 
 ## Analysis protocol
 
-In this project, we started with multi-organ single cell analysis of a mouse model of collagen-induced arthritis. We analyzed five different organ samples (joint, lung, muscle, skin, and spleen) from 6 CIA and 4 healthy control mice. The expression matrix containing this data can be found in **GEOXXX**. We further analyzed the data following the steps in [CIA-analyses.md][./vignettes/CIA-analyses.md].
+In this project, we started with multi-organ single cell analysis of a mouse model of collagen-induced arthritis. We analyzed five different organ samples (joint, lung, muscle, skin, and spleen) from 6 CIA and 4 healthy control mice. The expression matrix containing this data can be found in **GEOXXX**. We further analyzed the data following the steps in [CIA-analyses.md](./vignettes/CIA-analyses.md).
 
 Next, we performed a meta analysis of ten different immune-mediated inflammatory diseases (IMIDs), namely rheumatoid arthritis (RA), ulcerative colitis (UC), Crohn’s disease (CD), psoriasis (PSO), Sjögren’s syndrome (SS), systemic sclerosis (SSc), atopic dermatitis (AD), juvenile myositis (JM), ‘at risk for’ type 1 diabetes (T1D), and systemic lupus erythematosus (SLE), from 32 different datasets, namely GSEXXX .... For each of the datasets, the DEGs were calculated using GEO2R, between sick and healthy individuals. Based on the produced lists of DEGs, the diseases were further analyzed following [IMIDs-analyses.md](./vignettes/IMIDs-analyses.md).
 
