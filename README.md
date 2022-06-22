@@ -1,4 +1,4 @@
-# multi-organ digital twin
+# Multi-organ digital twin
 
 ## Analysis protocol
 
