@@ -58,6 +58,6 @@ pheatmap 1.0.12
 
 Package versions:
 
-pheatmap 1.0.12
+pheatmap 1.0.12  
 stats 4.0.4
 
