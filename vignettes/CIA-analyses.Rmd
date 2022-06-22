@@ -348,6 +348,30 @@ This code can also be used for ranking of URs involved in inter-organ interactio
 
 ### Connective Pathway Analysis
 
+In order to organize all enriched patways found in any cell type in joint and muscle we performed Connective Patwhay Analyses (CPA).
+To systematically assess similarities and differences between pathways in the different groups (i.e. joint and muscle), we first clustered the pathways based on similarities of genes involved in those pathways. To do so, the Jaccard-index was calculated, and values of 1-Jaccard-index used as distances for hierarchical clustering. The precalculation of Jaccard index was done in Matlab (see [matlab markdown][../MATLAB/Prepare_files_for_CPA_matlab_markdown.html] for details).
+Clustering was performed using the hclust() function in R with Ward’s method (i.e. parameter ward.D2). Only genes differentially expressed in at least one cell type (CIA) within each group (active and inactive disease organ) were considered for clustering. The dendrogram from the hierarchical clustering was next transformed into a tree-like structure, in which each node represents one pathway. 
+
+```{r,message=FALSE}
+source("../R/CPA_UR_rankings_functions.R")
+
+MainPath = "../data/CPA_InputFiles/"
+
+# load pre-computed Jaccard index matrix and pathway information plus define name which is to be used to save results:
+xx = as.matrix(read.csv(paste0(MainPath,'JaccardIndex_scRNAseq.csv'))) ##Jaccard Index
+pathinfo = read.table(paste(MainPath,'PathInfo_scRNAseq.csv',sep=''),sep=',',header=1)
+SAVENAME = 'scRNAseq'
+
+# run CPA:
+pathinfo = runCPA(xx,pathinfo,SAVENAME,1.365)
+# save results to file:
+write.table(file=paste(MainPath,'CPA_',SAVENAME,'_all_pathways.txt',sep=''),pathinfo,sep="\t", col.names=T, row.names=F, quote=F)
+
+# count the ratios of pathways showing same and opposing activation pattern in inflamed vs non-inflamed organ:
+ratios = count.same.and.opposing.activations(pathinfo)
+
+```
+
 ## Identification of human orthologs to mouse gene symbols
 
 The human orthologs can be downloaded from [Ensembl](http://www.ensembl.org/biomart/martview) following [this guide](https://www.ensembl.info/2009/01/21/how-to-get-all-the-orthologous-genes-between-two-species/). 
