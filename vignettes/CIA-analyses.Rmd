@@ -1,6 +1,6 @@
 ---
 title: "CIA analyses"
-author: "Sandra Lilja, Martin Smelik, Danuta Gawel, Oleg Sysoev"
+author: "Sandra Lilja, Martin Smelik, Danuta R. Gawel, Oleg Sysoev"
 date: "29/04/2022"
 output: 
   md_document:
