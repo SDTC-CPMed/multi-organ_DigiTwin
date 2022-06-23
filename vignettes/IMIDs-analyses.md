@@ -1,6 +1,6 @@
 # Meta analysis of 11 IMIDs for Connective pathway analysis and UR prioritization
 
-## Process the IPA output
+## Process the IPA output (MATLAB code)
 
 ### Define the main path
 
@@ -31,7 +31,7 @@ writetable(FN,sprintf('%sDatasetInfo_%s.csv',InputOutputFiles,savename),'delimit
 writetable(filesForOverlap,sprintf('%sDieasesPathways_%s.csv',InputOutputFiles,savename),'delimiter','\t')
 ```
 
-## Connective pathway analysis
+## Connective pathway analysis (R code)
 
 Similarly as described for the [CIA analysis - Connective Pathway
 Analysis](./CIA-analyses.md), we have performed connective pathway
@@ -58,7 +58,7 @@ ratios = count.same.and.opposing.activations(pathinfo)
 
 ![Fig_tree_pathways_AID](IMIDs-analyses_files/figure-markdown_github/Fig_tree_pathways_AID.png)
 
-## Overlap of the CPA of IMIDs vs individual IMIDs
+## Overlap of the CPA of IMIDs vs individual IMIDs (R code)
 
 In order to get a better overview on which programs and sub-programs of
 CPA are enriched in indyvidual diseases, we calulated a Fisher Exact
@@ -96,14 +96,7 @@ temp_plot
 
 ![](IMIDs-analyses_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
-## UR enrichment analysis of IMIDs
-
-``` matlab:code
-clear all
-close all
-clc
-warning('off', 'all')
-```
+## UR enrichment analysis of IMIDs (MATLAB code)
 
 ### Input requirements
 
@@ -352,7 +345,7 @@ head(CombinedPval, 5)
 %writetable(CombinedPval,path_output)
 ```
 
-## logFC and z-score analyses
+## logFC and z-score analyses (Python code)
 
 ### Load libraries
 
@@ -564,9 +557,9 @@ summary.to_csv(path_URs_logFC)
 summary.head()
 ```
 
-#Plot the logFC and z_scores of URs
+##Plot the logFC and z_scores of URs (R code)
 
-## URs z score
+### URs z score
 
 ``` r
 source('../R/plot_zScore.R')
@@ -578,7 +571,7 @@ temp_plot
 
 ![](IMIDs-analyses_files/figure-markdown_github/unnamed-chunk-20-1.png)
 
-## URs logFC
+### URs logFC
 
 ``` r
 source("../R/plot_logFC.R")

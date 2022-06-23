@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 # Meta analysis of 11 IMIDs for Connective pathway analysis and UR prioritization
 
 
-## Process the IPA output
+## Process the IPA output (MATLAB code)
 
 ### Define the main path
 ``` matlab:code
@@ -45,7 +45,7 @@ writetable(filesForOverlap,sprintf('%sDieasesPathways_%s.csv',InputOutputFiles,s
 
 
 
-## Connective pathway analysis
+## Connective pathway analysis (R code)
 
 Similarly as described for the [CIA analysis - Connective Pathway Analysis](./CIA-analyses.md), we have performed connective pathway analysis for the IMID datasets.
 
@@ -70,7 +70,7 @@ ratios = count.same.and.opposing.activations(pathinfo)
 
 ![Fig_tree_pathways_AID](IMIDs-analyses_files/figure-markdown_github/Fig_tree_pathways_AID.png)
 
-## Overlap of the CPA of IMIDs vs individual IMIDs
+## Overlap of the CPA of IMIDs vs individual IMIDs (R code)
 In order to get a better overview on which programs and sub-programs of CPA are enriched in indyvidual diseases, we calulated a Fisher Exact Test.
 To test if the programs (IMID_P1 and IMID_P2) derived from all analyzed IMIDs overlapped with programs from individual IMIDs in inflamed and non-inflamed organ sites, separately, we performed Fisher’s exact tests (right tailed), using all pathways in connective pathway analysis as a background, followed by correction for multiple testing using the Benjamini-Hochberg procedure. These analyses were repeated for IMID_subprograms (IMID_SPs) and subprograms from individual IMIDs. Disease pathways were defined as all pathways significantly enriched in a particular disease and inflammation state (IPA, p < 0.05). In case two or more datasets were representative of the same disease and condition (for example UC inflamed organs), pathway enrichment p values were combined with Fisher’s method. Enriched pathways were considered those whose combined p < 0.05
 
@@ -92,14 +92,8 @@ temp_plot <- plot_overlap(overlap)
 temp_plot
 ```
 
-## UR enrichment analysis of IMIDs
+## UR enrichment analysis of IMIDs (MATLAB code)
 
-```matlab:Code
-clear all
-close all
-clc
-warning('off', 'all')
-```
 
 ### Input requirements
 
@@ -407,7 +401,7 @@ head(CombinedPval, 5)
 ```
 
 
-## logFC and z-score analyses
+## logFC and z-score analyses (Python code)
 
 ### Load libraries
 ```{python echo=T, results='hide'}
@@ -643,9 +637,9 @@ kable(head(py$summary))
 ```
 
 
-#Plot the logFC and z_scores of URs
+##Plot the logFC and z_scores of URs (R code)
 
-## URs z score
+### URs z score
 ```{r echo=TRUE, eval = TRUE}
 source('../R/plot_zScore.R')
 URs_zScore = read.csv('../data/UR_analysis/UR_IMID_summary_z.csv')
@@ -656,7 +650,7 @@ temp_plot
 
 ```
 
-## URs logFC
+### URs logFC
 
 ```{R echo=TRUE, eval = TRUE}
 source("../R/plot_logFC.R")
