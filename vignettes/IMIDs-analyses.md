@@ -85,20 +85,18 @@ temp_plot
 
 ## UR enrichment analysis of IMIDs (MATLAB code)
 
-### Input requirements
+**Input requirements**
 
 -   The metadata table that summarizes the datasets and where the files
     for each dataset are stored
 -   Gene information
 -   The results from connective pathway analysis
 
-### We will produce
+**We will produce**
 
 A table with combined, FDR corrected pvalues and the count of
 significant p values across all cell types for each program/subprogram
 and UR
-
-### Load the metadata table
 
 ``` matlab:code
 %% INPUT
@@ -109,29 +107,12 @@ path_gene_info = '../data/Connective_pathway_analysis/gene_info_type_of_gene_202
 path_cpa_program2 = '../data/Connective_pathway_analysis/TreeStructure_nodes2_CLUSTER2_AID_noblood.txt';
 path_cpa_program1 = '../data/Connective_pathway_analysis/TreeStructure_nodes2_AID_noblood.txt';
 
-%% OUTPUT
+%% OUTPUT_path
 path_output = '../data/UR_analysis/UR_predictions_IMIDs_disease_Pvals.xlsx';
 
-
-%Load the metadata table
-
+%%Load the metadata table
 load(path_metadata,'AllDatasets')
-AllDatasets(strcmp(AllDatasets.active_USE,'unknown'),:)=[]; %WHY DO WE DO THIS//ask Danka
-AllDatasets(strcmp(AllDatasets.key,'GSE40568_SS_labial_salivary_gland'),:)=[]; %WHY DO WE DO THIS // ask Danka
-head(AllDatasets, 5)
-```
 
-|     |       file_name       |       file_path       |      folder_name      |      folder_path      |       disease       | disease_short | disease_short_broad_categories |     tissue      |   tissue_detail   | npatients | ncontrols |     gse     | active_USE | color_tissue | color_disease_broad | color_disease |        deg_key        |       Disease       | disease_key |  Datasets   | noPatient_Xinxiu | noControl_Xinxiu |    Tissues_Xinxiu     |       Refs       | numberOfDEGs |   tissues_key   |         group         |          key          |     UR      |   significantURs    |       deg_key2        |     deg_file_name     |     deg_file_path     |     DEG      |
-|:---:|:---------------------:|:---------------------:|:---------------------:|:---------------------:|:-------------------:|:-------------:|:------------------------------:|:---------------:|:-----------------:|:---------:|:---------:|:-----------:|:----------:|:------------:|:-------------------:|:-------------:|:---------------------:|:-------------------:|:-----------:|:-----------:|:----------------:|:----------------:|:---------------------:|:----------------:|:------------:|:---------------:|:---------------------:|:---------------------:|:-----------:|:-------------------:|:---------------------:|:---------------------:|:---------------------:|:------------:|
-|  1  | ’UR_GSE16161 skin 9A… | ’/Users/danga10/Docu… | ’2 Main affected org… | ’/Users/danga10/Docu… | ‘atopic dermatitis’ |     ‘AD’      |              ‘AD’              |     ‘skin’      |      ‘skin’       |     9     |     9     | ‘GSE16161’  |   ‘yes’    |  ‘#eedc1b’   |      ‘#7aff00’      |   ‘#7aff00’   | ’2 Main affected org… | ‘Atopic dermatitis’ |    ‘AD’     | ‘GSE16161’  |        9         |        9         |        ‘Skin’         | ‘PMID: 20004782’ |    27971     |     ‘skin’      | “2 Main affected org… |  ‘GSE16161_AD_skin’   | 202x4 table |      43x1 cell      |  ‘GSE16161_skin_AD’   | ’GSE16161_Skin AD 9 … | ’/Users/danga10/Docu… | 5930x4 table |
-|  2  | ’UR_GSE32924_AD_skin… | ’/Users/danga10/Docu… | ’2 Main affected org… | ’/Users/danga10/Docu… | ‘atopic dermatitis’ |     ‘AD’      |              ‘AD’              |     ‘skin’      |      ‘skin’       |    NaN    |     8     | ‘GSE32924’  |   ‘yes’    |  ‘#eedc1b’   |      ‘#7aff00’      |   ‘#7aff00’   | ’2 Main affected org… |         ’’          |    ‘AD’     | ‘GSE32924’  |        13        |        8         |        ‘Skin’         | ‘PMID: 21388663’ |     6939     |     ‘skin’      | “2 Main affected org… |  ‘GSE32924_AD_skin’   | 134x4 table |      22x1 cell      |  ‘GSE32924_skin_AD’   | ’GSE32924_Skin_AD 13… | ’/Users/danga10/Docu… | 5997x4 table |
-|  3  | ’GSE32924_AD_Inactiv… | ’/Users/danga10/Docu… | ’4 Non inflamed tiss… | ’/Users/danga10/Docu… | ‘atopic dermatitis’ |     ‘AD’      |              ‘AD’              | ‘skin_inactive’ |  ‘skin_inactive’  |    NaN    |     8     | ‘GSE32924’  |    ‘no’    |  ‘#eee8a5’   |      ‘#7aff00’      |   ‘#7aff00’   | ’4 Non inflamed tiss… | ‘Atopic dermatitis’ |    ‘AD’     | ‘GSE32924’  |        12        |        8         |  ‘Non lesional skin’  | ‘PMID: 21388663’ |     5715     | ‘skin_inactive’ | “4 Non inflamed tiss… | ’GSE32924_AD_skin_in… | 53x4 table  | \[{‘ESR1’,};{‘PGR’… | ’GSE32924_skin_inact… | ’GSE32924_uninflamed… | ’/Users/danga10/Docu… | 6015x4 table |
-|  4  | ’UR_GSE16879_colon_C… | ’/Users/danga10/Docu… | ’2 Main affected org… | ’/Users/danga10/Docu… |  ‘Crohn’s disease’  |     ‘CD’      |             ‘IBD’              |     ‘colon’     |      ‘colon’      |    NaN    |     6     | ‘GSE16879’  |   ‘yes’    |  ‘#c16919’   |      ‘#c16919’      |   ‘#c16919’   | ’2 Main affected org… |  ‘Crohn’s colitis’  |    ‘CD’     | ‘GSE16879’  |        19        |        6         |   ‘Colonic mucosa’    | ‘PMID: 19956723’ |     5295     |     ‘colon’     | “2 Main affected org… |  ‘GSE16879_CD_colon’  | 225x4 table |      96x1 cell      |  ‘GSE16879_colon_CD’  | ’GSE16879_colon_CD.c… | ’/Users/danga10/Docu… | 5930x4 table |
-|  5  | ’UR_GSE179285_ascend… | ’/Users/danga10/Docu… | ’2 Main affected org… | ’/Users/danga10/Docu… |  ‘Crohn’s disease’  |     ‘CD’      |             ‘IBD’              |     ‘colon’     | ‘ascending colon’ |    35     |    25     | ‘GSE179285’ |   ‘yes’    |  ‘#c16919’   |      ‘#c16919’      |   ‘#c16919’   | ’2 Main affected org… |         ’’          |    ‘CD’     | ‘GSE179285’ |        14        |        12        | ’Ascending/ descendi… |        ’’        |     7874     |     ‘colon’     | “2 Main affected org… | ’GSE179285_CD_ascend… | 192x4 table |      92x1 cell      | ‘GSE179285_colon_CD’  | ’GSE179285_ascending… | ’/Users/danga10/Docu… | 6012x4 table |
-
-### Main analysis
-
-``` matlab:code
 %% Load IMID_Ps and IMID_SPs from connective pathway analysis
 load(path_gene_info)
 gene_info = unique(gene_info(:,{'GeneID','Symbol','Synonyms','type_of_gene'}));
