@@ -365,7 +365,7 @@ summary_zScores.to_csv(path_URs_zScores)
 
 
 
-##Plot the logFC and z_scores of URs (R code)
+## Plot the logFC and z_scores of URs (R code)
 
 **URs z score**
 ```{r echo=TRUE, eval = TRUE}

@@ -204,7 +204,7 @@ summary_zScores = zScore_analysis(Datasets_Inf, Datasets_Noninf, path_z_scores)
 summary_zScores.to_csv(path_URs_zScores)
 ```
 
-##Plot the logFC and z_scores of URs (R code)
+## Plot the logFC and z_scores of URs (R code)
 
 **URs z score**
 
