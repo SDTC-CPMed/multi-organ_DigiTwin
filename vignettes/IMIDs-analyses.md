@@ -2,6 +2,15 @@
 
 ## Process the IPA output (MATLAB code)
 
+**Input requirements**
+
+The enriched pathways produced by IPA including the genes that belong to
+these pathways
+
+**We will produce**
+
+The Jaccard Index between the pathways
+
 ``` matlab:code
 %% Define the main path
 InputOutputFiles = '../data/CPA_InputFiles/';
@@ -54,7 +63,7 @@ ratios = count.same.and.opposing.activations(pathinfo)
 ## Overlap of the CPA of IMIDs vs individual IMIDs (R code)
 
 In order to get a better overview on which programs and sub-programs of
-CPA are enriched in indyvidual diseases, we calulated a Fisher Exact
+CPA are enriched in individual diseases, we calulated a Fisher Exact
 Test. To test if the programs (IMID_P1 and IMID_P2) derived from all
 analyzed IMIDs overlapped with programs from individual IMIDs in
 inflamed and non-inflamed organ sites, separately, we performed Fisher’s
@@ -160,219 +169,44 @@ head(CombinedPval, 5)
 
 ## logFC and z-score analyses (Python code)
 
-### Load libraries
+**Input requirements**
+
+-   The UR enrichment scores computed above
+-   Folder including differentially expressed genes for each dataset
+-   Folder including z scores for each IPA result
+
+**We will produce**
+
+Dot plots showing the A) predicted activities and B) fold changes, of
+the shared URs of IMID_SP1.6. (Figure S8)
 
 ``` python
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-import openpyxl
-```
-
-``` r
-library(reticulate)
-library(knitr)
-library(cowplot)
-library(ggplot2)
-```
-
-### Load input files
-
-``` python
+## Input
 URs_all_diseases = pd.read_table('../data/UR_analysis/UR_predictions_IMIDs_disease_Pvals.txt', sep = ',')
-datasets = pd.read_table('../data/UR_analysis/file_names.txt', header = None)
-URs = pd.read_table('../data/UR_analysis/URs.txt', header = None)[0]
-activity = pd.read_table('../data/UR_analysis/activity.txt', header = None)
-translation = pd.read_table('../data/UR_analysis/gene_info.txt', sep = ',')
-Datasets_Inf = pd.read_table('../data/UR_analysis/Datasets_Inf.txt', sep = ',', header = None)
-Datasets_Noninf = pd.read_table('../data/UR_analysis/Datasets_Noninf.txt', sep = ',', header = None)
 path_DEGs = '../data/AllDEGfilesMovedToOneFolder/'
 path_z_scores = '../data/UR_analysis/z_scores/ '
-```
 
-### Set output paths
-
-``` python
+## Output paths
 path_Data_S15 = '../data/UR_analysis/Data S15.xlsx'
 path_URs_logFC = '../data/UR_analysis/UR_IMID_summary_logFC.csv'
 path_URs_zScore = '../data/UR_analysis/UR_IMID_summary_z.csv'
-```
 
-### Preprocess the data
+## Preprocess the data
+URs_all_diseases = preprocess_the_input(URs_all_diseases)
+Datasets_Inf, Datasets_Noninf = set_up_structure_for_output_files()
 
-``` python
-# Subset to only P1 and only those URs that are significant in at least 1 disease
-URs_all_diseases = URs_all_diseases[URs_all_diseases['SP'] == '1.6']
-IMID_count = list()
-for i in range(len(URs_all_diseases)):
-    IMID_count.append(sum(URs_all_diseases.iloc[i,8:] < 0.05))
-URs_all_diseases = URs_all_diseases[np.array(IMID_count) > 0]
+## logFC_analysis
+summary_logFC = logFC_analysis(Datasets_Inf, Datasets_Noninf, path_DEGs)
+summary_logFC.to_csv(path_URs_logFC)
 
-URs_all_diseases = URs_all_diseases.sort_values(by = 'UC_active')
-#URs_all_diseases.to_excel(path_Data_S15, header = True, index = False)
-
-URs_all_diseases.head()
-```
-
-### Preprocess the files
-
-``` python
-# Read data. All output of UR_enrichment_DEGs_as_background.m
-
-#file names:
-datasets = datasets.drop(21)
-datasets.index = np.array(range(len(datasets)))
-datasets = datasets[0]
-
-
-#if disease is active or not
-activity = activity.drop(21)
-activity.index = np.array(range(len(activity)))
-activity = activity[0]
-
-#Gene translation
-
-#If UR is predicted to be UR in a given dataset for SP1.6
-Datasets_Inf.index = URs
-Datasets_Inf.columns = datasets[activity == 'yes']
-Datasets_Noninf.index = URs
-Datasets_Noninf.columns = datasets[activity == 'no']
-
-Datasets_Inf.head()
-```
-
-### logFC analysis
-
-``` python
-i = 0
-logFC_list = list()
-for dataset in Datasets_Inf.columns:
-    data = pd.read_table(path_DEGs + dataset)
-    if i in (6,12,15,16):
-        if i == 15:
-            data = data.rename(columns = {'ORF': 'ENTREZ_GENE_ID'})
-        trans = translation[translation['Symbol'].isin(Datasets_Inf.index)][['GeneID','Symbol']]
-        data = trans.merge(data, left_on = 'GeneID', right_on ='ENTREZ_GENE_ID')[['Symbol', 'logFC']]
-        data = data.rename(columns = {'Symbol': 'Gene.symbol'})
-    else:
-        if i in (7,20):
-            data = data.rename(columns = {'ORF': 'Gene.symbol'})
-        if i == 8:
-            data = data.rename(columns = {'Gene.Symbol': 'Gene.symbol'})
-        if i == 9:
-            data = data.rename(columns = {'GENE_SYMBOL': 'Gene.symbol'})
-        if i == 13:
-            data = data.rename(columns = {'ID': 'Gene.symbol'})
-        data = data[data['adj.P.Val'] < 0.05]
-        data = data[data['Gene.symbol'].isin(Datasets_Inf.index)]\
-        .drop_duplicates('Gene.symbol')[['Gene.symbol', 'logFC']]
-    
-    data = data.rename(columns = {'logFC': dataset})
-    data.index = data['Gene.symbol']
-    data.pop('Gene.symbol')    
-    logFC_list.append(data)
-    i = i+1
-    
-logFC_Inf = pd.concat(logFC_list, axis = 1)
-
-i = 0
-logFC_list = list()
-for dataset in Datasets_Noninf.columns:
-
-    data = pd.read_table(path_DEGs + dataset)
-    if i == 3:
-        data = data.rename(columns = {'ORF': 'Gene.symbol'})
-    if i == 8:
-        data = data.rename(columns = {'GENE_NAME': 'Gene.symbol'})
-    data = data[data['adj.P.Val'] < 0.05]
-    data = data[data['Gene.symbol'].isin(Datasets_Inf.index)].drop_duplicates('Gene.symbol')[['Gene.symbol', 'logFC']]
-    data = data.rename(columns = {'logFC': dataset})
-    data.index = data['Gene.symbol']
-    data.pop('Gene.symbol')
-    logFC_list.append(data)
-    i = i+1
-    
-logFC_Noninf = pd.concat(logFC_list, axis = 1)
-
-logFC_Inf.head()
-```
-
-### Z score analysis
-
-``` python
-z_scores_Inf = list()
-i = 0
-for dataset in Datasets_Inf.columns:
-    if i != 12:
-        a = pd.read_table(path_z_scores + dataset, sep = ',', index_col = 0)    
-        a.columns = [dataset]
-        z_scores_Inf.append(a)
-    i = i+1
-z_scores_Inf = pd.concat(z_scores_Inf, axis = 1)
-        
-    
-z_scores_Noninf = list()
-for dataset in Datasets_Noninf.columns:
-    a = pd.read_table(path_z_scores + dataset, sep = ',', index_col = 0)    
-    a.columns = [dataset]
-    z_scores_Noninf.append(a)
-z_scores_Noninf = pd.concat(z_scores_Noninf, axis = 1)
-
-z_scores_Inf.head()
-```
-
-### Prepare the plots
-
-``` python
-Datasets_Noninf_z_score = Datasets_Noninf.copy()
-Datasets_Inf_z_score = Datasets_Inf.copy()
-
-i = 0
-for dataset in Datasets_Noninf_z_score.columns:
-    Datasets_Noninf_z_score.loc[Datasets_Noninf_z_score[dataset]>0,dataset] =\
-    z_scores_Noninf[Datasets_Noninf_z_score[dataset]>0][dataset]
-
-for dataset in Datasets_Inf_z_score.columns:
-    if i != 12:
-        Datasets_Inf_z_score.loc[Datasets_Inf_z_score[dataset]>0,dataset] =\
-        z_scores_Inf[Datasets_Inf_z_score[dataset]>0][dataset]
-    i = i+1
-    
-summary = pd.concat((Datasets_Inf_z_score, Datasets_Noninf_z_score), axis = 1)
-summary = summary.fillna(0)
-summary = summary[summary.sum(axis = 1) != 0]
-summary = summary.loc[summary.index.isin(['AR', 'ESR2', 'FAS', 'IFNG', 'IL1A', 'IL1B', 'TLR3', 'TNF'])]
-summary.to_csv(path_URs_zScore)
-summary.head()
-```
-
-``` python
-Datasets_Noninf_logFC = Datasets_Noninf.copy()
-Datasets_Inf_logFC = Datasets_Inf.copy()
-
-i = 0
-for dataset in Datasets_Noninf_logFC.columns:
-    Datasets_Noninf_logFC.loc[Datasets_Noninf_logFC[dataset]>0,dataset] =\
-    logFC_Noninf[Datasets_Noninf_logFC[dataset]>0][dataset]
-
-for dataset in Datasets_Inf_logFC.columns:
-    if i != 12:
-        Datasets_Inf_logFC.loc[Datasets_Inf_logFC[dataset]>0,dataset] =\
-        logFC_Inf[Datasets_Inf_logFC[dataset]>0][dataset]
-    i = i+1
-    
-summary = pd.concat((Datasets_Inf_logFC, Datasets_Noninf_logFC), axis = 1)
-summary = summary.fillna(0)
-summary = summary[summary.sum(axis = 1) != 0]
-summary = summary.loc[summary.index.isin(['AR', 'ESR2', 'FAS', 'IFNG', 'IL1A', 'IL1B', 'TLR3', 'TNF'])]
-summary.to_csv(path_URs_logFC)
-summary.head()
+## z score analysis
+summary_zScores = zScore_analysis(Datasets_Inf, Datasets_Noninf, path_z_scores)
+summary_zScores.to_csv(path_URs_zScores)
 ```
 
 ##Plot the logFC and z_scores of URs (R code)
 
-### URs z score
+**URs z score**
 
 ``` r
 source('../R/plot_zScore.R')
@@ -381,9 +215,9 @@ temp_plot <- plot_zScore(URs_zScore)
 temp_plot
 ```
 
-![](IMIDs-analyses_files/figure-markdown_github/unnamed-chunk-20-1.png)
+![](IMIDs-analyses_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
-### URs logFC
+**URs logFC**
 
 ``` r
 source("../R/plot_logFC.R")
@@ -392,4 +226,4 @@ temp_plot <- plot_logFC(URs_logFC)
 temp_plot
 ```
 
-![](IMIDs-analyses_files/figure-markdown_github/unnamed-chunk-21-1.png)
+![](IMIDs-analyses_files/figure-markdown_github/unnamed-chunk-7-1.png)
