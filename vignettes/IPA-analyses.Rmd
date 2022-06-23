@@ -1,6 +1,6 @@
 ---
 title: "IPA analyses"
-author: "Xinxiu Lee, Sandra Lilja, Martin Smelik, Danuta Gawel"
+author: "Xinxiu Lee, Sandra Lilja"
 date: "29/04/2022"
 output: 
   md_document:
