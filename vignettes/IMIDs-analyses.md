@@ -2,15 +2,11 @@
 
 ## Process the IPA output (MATLAB code)
 
-### Define the main path
-
 ``` matlab:code
+%% Define the main path
 InputOutputFiles = '../data/CPA_InputFiles/';
-```
 
-### Main analyses
-
-``` matlab:code
+%% Main analyses
 % define variables:
 savename = 'IMID';
 PATHH1 = sprintf('%sPathwayenrichment_results/IMIDs/',InputOutputFiles);
@@ -20,11 +16,8 @@ FN = readtable(sprintf('%s/PathFilesDescription_IMIDs.csv',InputOutputFiles));
 [AllEnrichedPaths,filesForOverlap] = ReadInIPAPathwayEnrichments(FN,PATHH1);
 % calculate jaccard index:
 Jaccard = CalculateJaccardIndex(AllEnrichedPaths);
-```
 
-### Save the outputs:
-
-``` matlab:code
+%% Save the outputs:
 writetable(Jaccard,sprintf('%sJaccardIndex_%s.csv',InputOutputFiles,savename))
 writetable(AllEnrichedPaths,sprintf('%sPathInfo_%s.csv',InputOutputFiles,savename))
 writetable(FN,sprintf('%sDatasetInfo_%s.csv',InputOutputFiles,savename),'delimiter','\t')
@@ -80,12 +73,6 @@ those whose combined p \< 0.05
 # prepare files to check overlap between programs and enriched pathways per IMID:
 Dis.Pval = read.table(paste(MainPath,'DieasesPathways_IMID.csv',sep=''),sep='\t',quote = "",header=T)
 OverlapingPaths = FindOverlapingPaths(Dis.Pval,pathinfo)
-```
-
-The pathway overlap is shown below.
-
-``` r
-library(ggplot2)
 
 source("../R/plot_overlap.R")
 overlap = read.csv('../data/IMIDs_pathway_overlap_with_SPs_reshaped_for_dot_plotALL.txt')
@@ -105,32 +92,27 @@ temp_plot
 -   Gene information
 -   The results from connective pathway analysis
 
-**We can find the files at following locations:**
-
-``` matlab:code
-% DEGs
-path_metadata = '../data/Connective_pathway_analysis/AllDatasets_DEGs_martin.mat';
-path_gene_info = '../data/Connective_pathway_analysis/gene_info_type_of_gene_2020_03_03.mat';
-% connective pathway analysis
-path_cpa_program2 = '../data/Connective_pathway_analysis/TreeStructure_nodes2_CLUSTER2_AID_noblood.txt';
-path_cpa_program1 = '../data/Connective_pathway_analysis/TreeStructure_nodes2_AID_noblood.txt';
-```
-
 ### We will produce
 
 A table with combined, FDR corrected pvalues and the count of
 significant p values across all cell types for each program/subprogram
 and UR
 
-### We will save the file here:
-
-``` matlab:code
-path_output = '../data/UR_analysis/UR_predictions_IMIDs_disease_Pvals.xlsx';
-```
-
 ### Load the metadata table
 
 ``` matlab:code
+%% INPUT
+% DEGs
+path_metadata = '../data/Connective_pathway_analysis/AllDatasets_DEGs_martin.mat';
+path_gene_info = '../data/Connective_pathway_analysis/gene_info_type_of_gene_2020_03_03.mat';
+% connective pathway analysis
+path_cpa_program2 = '../data/Connective_pathway_analysis/TreeStructure_nodes2_CLUSTER2_AID_noblood.txt';
+path_cpa_program1 = '../data/Connective_pathway_analysis/TreeStructure_nodes2_AID_noblood.txt';
+
+%% OUTPUT
+path_output = '../data/UR_analysis/UR_predictions_IMIDs_disease_Pvals.xlsx';
+
+
 %Load the metadata table
 
 load(path_metadata,'AllDatasets')
@@ -147,187 +129,43 @@ head(AllDatasets, 5)
 |  4  | ’UR_GSE16879_colon_C… | ’/Users/danga10/Docu… | ’2 Main affected org… | ’/Users/danga10/Docu… |  ‘Crohn’s disease’  |     ‘CD’      |             ‘IBD’              |     ‘colon’     |      ‘colon’      |    NaN    |     6     | ‘GSE16879’  |   ‘yes’    |  ‘#c16919’   |      ‘#c16919’      |   ‘#c16919’   | ’2 Main affected org… |  ‘Crohn’s colitis’  |    ‘CD’     | ‘GSE16879’  |        19        |        6         |   ‘Colonic mucosa’    | ‘PMID: 19956723’ |     5295     |     ‘colon’     | “2 Main affected org… |  ‘GSE16879_CD_colon’  | 225x4 table |      96x1 cell      |  ‘GSE16879_colon_CD’  | ’GSE16879_colon_CD.c… | ’/Users/danga10/Docu… | 5930x4 table |
 |  5  | ’UR_GSE179285_ascend… | ’/Users/danga10/Docu… | ’2 Main affected org… | ’/Users/danga10/Docu… |  ‘Crohn’s disease’  |     ‘CD’      |             ‘IBD’              |     ‘colon’     | ‘ascending colon’ |    35     |    25     | ‘GSE179285’ |   ‘yes’    |  ‘#c16919’   |      ‘#c16919’      |   ‘#c16919’   | ’2 Main affected org… |         ’’          |    ‘CD’     | ‘GSE179285’ |        14        |        12        | ’Ascending/ descendi… |        ’’        |     7874     |     ‘colon’     | “2 Main affected org… | ’GSE179285_CD_ascend… | 192x4 table |      92x1 cell      | ‘GSE179285_colon_CD’  | ’GSE179285_ascending… | ’/Users/danga10/Docu… | 6012x4 table |
 
-### Load IMID_Ps and IMID_SPs from connective pathway analysis
+### Main analysis
 
 ``` matlab:code
-%% new section
- 
+%% Load IMID_Ps and IMID_SPs from connective pathway analysis
 load(path_gene_info)
 gene_info = unique(gene_info(:,{'GeneID','Symbol','Synonyms','type_of_gene'}));
 [Fn, AllDatasets] = preprocess(gene_info, AllDatasets);
-clearvars -except Fn savename AllDatasets gene_info path_cpa_program2 path_cpa_program1 path_output
-head(Fn, 5)
-```
 
-|     |          key          |       file_name       |     group     |     DEG      |  broad_label  |
-|:---:|:---------------------:|:---------------------:|:-------------:|:------------:|:-------------:|
-|  1  | ’UR_GSE16161 skin 9A… | ’UR_GSE16161 skin 9A… |  ‘Inflamed’   | 16811x1 cell |  ‘AD_active’  |
-|  2  | ’UR_GSE32924_AD_skin… | ’UR_GSE32924_AD_skin… |  ‘Inflamed’   | 5289x1 cell  |  ‘AD_active’  |
-|  3  | ’GSE32924_AD_Inactiv… | ’GSE32924_AD_Inactiv… | ‘Noninflamed’ | 4262x1 cell  | ‘AD_inactive’ |
-|  4  | ’UR_GSE16879_colon_C… | ’UR_GSE16879_colon_C… |  ‘Inflamed’   | 3709x1 cell  |  ‘CD_active’  |
-|  5  | ’UR_GSE179285_ascend… | ’UR_GSE179285_ascend… |  ‘Inflamed’   | 5829x1 cell  |  ‘CD_active’  |
-
-### Load IMID_SPs and IMID_Ps
-
-``` matlab:code
 %% load SPs %% add subprograms of program 1
 SP = load_SPs(path_cpa_program1, path_cpa_program2)
-```
 
-|     |   SP   | AllMolecules |
-|:---:|:------:|:------------:|
-|  1  | ‘1.1’  | 1x1108 cell  |
-|  2  | ‘1.10’ | 1x1116 cell  |
-|  3  | ‘1.2’  |  1x368 cell  |
-|  4  | ‘1.3’  | 1x1492 cell  |
-|  5  | ‘1.4’  | 1x1582 cell  |
-|  6  | ‘1.5’  |  1x864 cell  |
-|  7  | ‘1.6’  | 1x2083 cell  |
-|  8  | ‘1.7’  | 1x1211 cell  |
-|  9  | ‘1.8’  | 1x1255 cell  |
-| 10  | ‘1.9’  |  1x305 cell  |
-| 11  | ‘2.1’  |  1x24 cell   |
-| 12  | ‘2.10’ |  1x57 cell   |
-| 13  | ‘2.11’ |  1x79 cell   |
-| 14  | ‘2.12’ |  1x81 cell   |
-| 15  | ‘2.13’ |  1x21 cell   |
-| 16  | ‘2.2’  | 1x1735 cell  |
-| 17  | ‘2.3’  |  1x229 cell  |
-| 18  | ‘2.4’  |  1x58 cell   |
-| 19  | ‘2.5’  | 1x2173 cell  |
-| 20  | ‘2.6’  |  1x411 cell  |
-| 21  | ‘2.7’  |  1x298 cell  |
-| 22  | ‘2.8’  |  1x35 cell   |
-| 23  | ‘2.9’  |  1x445 cell  |
-| 24  |  ‘P1’  | 1x4693 cell  |
-| 25  |  ‘P2’  | 1x3980 cell  |
-
-``` matlab:code
-clearvars -except SP Fn savename AllDatasets gene_info path_output
-
-head(SP, 5)
-```
-
-|     |   SP   | AllMolecules |
-|:---:|:------:|:------------:|
-|  1  | ‘1.1’  | 1x1108 cell  |
-|  2  | ‘1.10’ | 1x1116 cell  |
-|  3  | ‘1.2’  |  1x368 cell  |
-|  4  | ‘1.3’  | 1x1492 cell  |
-|  5  | ‘1.4’  | 1x1582 cell  |
-
-### Load URs
-
-``` matlab:code
- 
-%% load URs: 
+%% Load URs: 
 UR = load_URs(AllDatasets);
 clearvars -except SP Fn savename UR path_output
-head(UR, 5)
-```
 
-|     |   UR    |          key          |       file_name       |   group    |     DS     |
-|:---:|:-------:|:---------------------:|:---------------------:|:----------:|:----------:|
-|  1  | ‘ESR1’  | ’UR_GSE16161 skin 9A… | ’UR_GSE16161 skin 9A… | ‘Inflamed’ | 1x735 cell |
-|  2  | ‘TGFB1’ | ’UR_GSE16161 skin 9A… | ’UR_GSE16161 skin 9A… | ‘Inflamed’ | 1x846 cell |
-|  3  | ‘ESR2’  | ’UR_GSE16161 skin 9A… | ’UR_GSE16161 skin 9A… | ‘Inflamed’ | 1x364 cell |
-|  4  | ‘IFNG’  | ’UR_GSE16161 skin 9A… | ’UR_GSE16161 skin 9A… | ‘Inflamed’ | 1x666 cell |
-|  5  |  ‘AGT’  | ’UR_GSE16161 skin 9A… | ’UR_GSE16161 skin 9A… | ‘Inflamed’ | 1x415 cell |
-
-### Fisher test enrichment of UR DS in SPs:
-
-``` matlab:code
+%% Fisher test enrichment of UR DS in SPs:
 FishertestR = Fishers_test(SP,UR,Fn)
-```
 
-``` text:output
-FishertestR = 
-      cellsdes: [25x2 table]
-        rowdes: [32x5 table]
-    coldes_URs: {506x1 cell}
-    moreURinfo: [3129x5 table]
-          Pval: {25x1 cell}
-            OR: {25x1 cell}
-
-FishertestR = 
-      cellsdes: [25x2 table]
-        rowdes: [32x5 table]
-    coldes_URs: {506x1 cell}
-    moreURinfo: [3129x5 table]
-          Pval: {25x1 cell}
-            OR: {25x1 cell}
-```
-
-### combine pvalues over joint and muscle:
-
-``` matlab:code
+%% Combine pvalues over joint and muscle:
 CombinedOverInfandNoninf = Fishers_method(FishertestR)
-```
 
-``` text:output
-CombinedOverInfandNoninf = 
-        cols_URs: {506x1 cell}
-        rows_SPs: {25x1 cell}
-       CombP_Inf: [25x506 double]
-    CombP_Noninf: [25x506 double]
-       CombP_all: [25x506 double]
-```
-
-### FDR correction over Programs
-
-``` matlab:code
-% For each program and UR, do FDR correction 
+%% For each program and UR, do FDR correction 
 CombinedOverInfandNoninf = FDR_correction(CombinedOverInfandNoninf)
-```
 
-``` text:output
-CombinedOverInfandNoninf = 
-        cols_URs: {506x1 cell}
-        rows_SPs: {25x1 cell}
-       CombP_Inf: [25x506 double]
-    CombP_Noninf: [25x506 double]
-       CombP_all: [25x506 double]
-         FDR_Inf: [25x506 double]
-      FDR_Noninf: [25x506 double]
-         FDR_All: [25x506 double]
-```
-
-### Count significant pvalues over joints and muscles:
-
-``` matlab:code
-% For each program and UR, count how in how many cell types was UR significant 
+%% For each program and UR, count how in how many cell types was UR significant 
 [count_Inf, count_Noninf] = count_significant(FishertestR);
-
 CombinedOverInfandNoninf.count_Inf = count_Inf;
 CombinedOverInfandNoninf.count_Noninf = count_Noninf;
 
-CombinedOverInfandNoninf
-```
-
-``` text:output
-CombinedOverInfandNoninf = 
-        cols_URs: {506x1 cell}
-        rows_SPs: {25x1 cell}
-       CombP_Inf: [25x506 double]
-    CombP_Noninf: [25x506 double]
-       CombP_all: [25x506 double]
-         FDR_Inf: [25x506 double]
-      FDR_Noninf: [25x506 double]
-         FDR_All: [25x506 double]
-       count_Inf: [25x506 double]
-    count_Noninf: [25x506 double]
-```
-
-### Combine pvals for each disease
-
-``` matlab:code
+%% Combine pvals for each disease
 CombinedPval_Disease = combine_Pvals(FishertestR);
-```
 
-### Final output
-
-``` matlab:code
+%% Format output
 CombinedPval  = format_output(CombinedOverInfandNoninf,CombinedPval_Disease)
+
+%% Save the data
+writetable(CombinedPval,path_output)
 head(CombinedPval, 5)
 ```
 
@@ -338,12 +176,6 @@ head(CombinedPval, 5)
 |  3  | ‘1.2’  | ‘ACKR1’ |     3.5817e-01     |      1.0000e+00       |  9.1909e-01   |  1.0000e+00  |   1.0000e+00    | 1.0000e+00 |       1        |         0         | 1.0000e+00 |      1      | 3.0478e-02 | 1.0000e+00  |     1     |      1      | 5.5395e-04 |      1       | 1.0000e+00 | 1.0000e+00 | 2.6368e-02 | 4.3447e-01 | 1.0000e+00  |          1           |  1.0000e+00  |
 |  4  | ‘1.3’  | ‘ACKR1’ |     1.0000e+00     |      1.0000e+00       |  1.0000e+00   |  1.0000e+00  |   1.0000e+00    | 1.0000e+00 |       0        |         0         | 1.0000e+00 |      1      | 1.0000e+00 | 1.0000e+00  |     1     |      1      | 1.0000e+00 |      1       | 1.0000e+00 | 1.0000e+00 | 1.0000e+00 | 1.0000e+00 | 1.0000e+00  |          1           |  1.0000e+00  |
 |  5  | ‘1.4’  | ‘ACKR1’ |     9.9971e-01     |      1.0000e+00       |  1.0000e+00   |  1.0000e+00  |   1.0000e+00    | 1.0000e+00 |       0        |         0         | 1.0000e+00 |      1      | 3.2724e-01 | 1.0000e+00  |     1     |      1      | 4.5066e-01 |      1       | 1.0000e+00 | 1.0000e+00 | 2.0132e-01 | 7.8095e-01 | 1.0000e+00  |          1           |  1.0000e+00  |
-
-### Save the data
-
-``` matlab:code
-%writetable(CombinedPval,path_output)
-```
 
 ## logFC and z-score analyses (Python code)
 
@@ -564,7 +396,6 @@ summary.head()
 ``` r
 source('../R/plot_zScore.R')
 URs_zScore = read.csv('../data/UR_analysis/UR_IMID_summary_z.csv')
-
 temp_plot <- plot_zScore(URs_zScore)
 temp_plot
 ```
@@ -576,7 +407,6 @@ temp_plot
 ``` r
 source("../R/plot_logFC.R")
 URs_logFC = read.csv('../data/UR_analysis/UR_IMID_summary_logFC.csv')
-
 temp_plot <- plot_logFC(URs_logFC)
 temp_plot
 ```
