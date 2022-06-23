@@ -15,7 +15,37 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 # Meta analysis of 11 IMIDs for Connective pathway analysis and UR prioritization
 
 
-### Connective pathway analysis
+## Process the IPA output
+
+### Define the main path
+``` matlab:code
+InputOutputFiles = '../data/CPA_InputFiles/';
+```
+
+### Main analyses
+``` matlab:code
+% define variables:
+savename = 'IMID';
+PATHH1 = sprintf('%sPathwayenrichment_results/IMIDs/',InputOutputFiles);
+FN = readtable(sprintf('%s/PathFilesDescription_IMIDs.csv',InputOutputFiles));
+% read in all pathways, filter significant ones, find all involved genes
+% and summarize pathway activation direction:
+[AllEnrichedPaths,filesForOverlap] = ReadInIPAPathwayEnrichments(FN,PATHH1);
+% calculate jaccard index:
+Jaccard = CalculateJaccardIndex(AllEnrichedPaths);
+```
+
+### Save the outputs:
+``` matlab:code
+writetable(Jaccard,sprintf('%sJaccardIndex_%s.csv',InputOutputFiles,savename))
+writetable(AllEnrichedPaths,sprintf('%sPathInfo_%s.csv',InputOutputFiles,savename))
+writetable(FN,sprintf('%sDatasetInfo_%s.csv',InputOutputFiles,savename),'delimiter','\t')
+writetable(filesForOverlap,sprintf('%sDieasesPathways_%s.csv',InputOutputFiles,savename),'delimiter','\t')
+```
+
+
+
+## Connective pathway analysis
 
 Similarly as described for the [CIA analysis - Connective Pathway Analysis](./CIA-analyses.md), we have performed connective pathway analysis for the IMID datasets.
 
@@ -38,7 +68,9 @@ write.table(file=paste(MainPath,'CPA_',SAVENAME,'_all_pathways.txt',sep=''),path
 ratios = count.same.and.opposing.activations(pathinfo)
 ```
 
-# Overlap of the CPA of IMIDs vs individual IMIDs
+![Fig_tree_pathways_AID](IMIDs-analyses_files/figure-markdown_github/Fig_tree_pathways_AID.png)
+
+## Overlap of the CPA of IMIDs vs individual IMIDs
 In order to get a better overview on which programs and sub-programs of CPA are enriched in indyvidual diseases, we calulated a Fisher Exact Test.
 To test if the programs (IMID_P1 and IMID_P2) derived from all analyzed IMIDs overlapped with programs from individual IMIDs in inflamed and non-inflamed organ sites, separately, we performed Fisher’s exact tests (right tailed), using all pathways in connective pathway analysis as a background, followed by correction for multiple testing using the Benjamini-Hochberg procedure. These analyses were repeated for IMID_subprograms (IMID_SPs) and subprograms from individual IMIDs. Disease pathways were defined as all pathways significantly enriched in a particular disease and inflammation state (IPA, p < 0.05). In case two or more datasets were representative of the same disease and condition (for example UC inflamed organs), pathway enrichment p values were combined with Fisher’s method. Enriched pathways were considered those whose combined p < 0.05
 
@@ -60,9 +92,7 @@ temp_plot <- plot_overlap(overlap)
 temp_plot
 ```
 
-# UR prediction
-
-# UR enrichment analysis of IMIDs
+## UR enrichment analysis of IMIDs
 
 ```matlab:Code
 clear all
@@ -71,14 +101,13 @@ clc
 warning('off', 'all')
 ```
 
-# Input requirements
-### For this analysis we will need:
+### Input requirements
 
    -  The metadata table that summarizes the datasets and where the files for each dataset are stored 
    -  Gene information 
    -  The results from connective pathway analysis 
 
-### We can find the files at following locations:
+**We can find the files at following locations:**
 
 \hfill \break
 
@@ -378,7 +407,9 @@ head(CombinedPval, 5)
 ```
 
 
-# Load libraries
+## logFC and z-score analyses
+
+### Load libraries
 ```{python echo=T, results='hide'}
 import pandas as pd
 import numpy as np
@@ -395,7 +426,7 @@ library(ggplot2)
 
 ```
 
-# Load input
+### Load input files
 ```{python echo=T, results='hide'}
 URs_all_diseases = pd.read_table('../data/UR_analysis/UR_predictions_IMIDs_disease_Pvals.txt', sep = ',')
 datasets = pd.read_table('../data/UR_analysis/file_names.txt', header = None)
@@ -409,7 +440,7 @@ path_z_scores = '../data/UR_analysis/z_scores/ '
 
 ```
 
-# Set output paths
+### Set output paths
 ```{python}
 path_Data_S15 = '../data/UR_analysis/Data S15.xlsx'
 path_URs_logFC = '../data/UR_analysis/UR_IMID_summary_logFC.csv'
@@ -417,7 +448,7 @@ path_URs_zScore = '../data/UR_analysis/UR_IMID_summary_z.csv'
 ```
 
 
-# Preprocess the data
+### Preprocess the data
 ```{python echo=T, results='hide'}
 
 
@@ -440,6 +471,7 @@ kable(head(py$URs_all_diseases))
 ```
 
 
+### Preprocess the files
 ```{python echo=T, results='hide'}
 # Read data. All output of UR_enrichment_DEGs_as_background.m
 
@@ -469,7 +501,7 @@ Datasets_Inf.head()
 kable(head(py$Datasets_Inf))
 ```
 
-# Main analyses
+### logFC analysis
 ```{python echo=T, results='hide'}
 i = 0
 logFC_list = list()
@@ -528,7 +560,7 @@ logFC_Inf.head()
 kable(head(py$logFC_Inf))
 ```
 
-
+### Z score analysis
 ```{python echo=T, results='hide'}
 z_scores_Inf = list()
 i = 0
@@ -555,6 +587,7 @@ z_scores_Inf.head()
 kable(head(py$z_scores_Inf))
 ```
 
+### Prepare the plots
 ```{python echo=T, results='hide'}
 Datasets_Noninf_z_score = Datasets_Noninf.copy()
 Datasets_Inf_z_score = Datasets_Inf.copy()

@@ -1,6 +1,37 @@
 # Meta analysis of 11 IMIDs for Connective pathway analysis and UR prioritization
 
-### Connective pathway analysis
+## Process the IPA output
+
+### Define the main path
+
+``` matlab:code
+InputOutputFiles = '../data/CPA_InputFiles/';
+```
+
+### Main analyses
+
+``` matlab:code
+% define variables:
+savename = 'IMID';
+PATHH1 = sprintf('%sPathwayenrichment_results/IMIDs/',InputOutputFiles);
+FN = readtable(sprintf('%s/PathFilesDescription_IMIDs.csv',InputOutputFiles));
+% read in all pathways, filter significant ones, find all involved genes
+% and summarize pathway activation direction:
+[AllEnrichedPaths,filesForOverlap] = ReadInIPAPathwayEnrichments(FN,PATHH1);
+% calculate jaccard index:
+Jaccard = CalculateJaccardIndex(AllEnrichedPaths);
+```
+
+### Save the outputs:
+
+``` matlab:code
+writetable(Jaccard,sprintf('%sJaccardIndex_%s.csv',InputOutputFiles,savename))
+writetable(AllEnrichedPaths,sprintf('%sPathInfo_%s.csv',InputOutputFiles,savename))
+writetable(FN,sprintf('%sDatasetInfo_%s.csv',InputOutputFiles,savename),'delimiter','\t')
+writetable(filesForOverlap,sprintf('%sDieasesPathways_%s.csv',InputOutputFiles,savename),'delimiter','\t')
+```
+
+## Connective pathway analysis
 
 Similarly as described for the [CIA analysis - Connective Pathway
 Analysis](./CIA-analyses.md), we have performed connective pathway
@@ -25,7 +56,9 @@ write.table(file=paste(MainPath,'CPA_',SAVENAME,'_all_pathways.txt',sep=''),path
 ratios = count.same.and.opposing.activations(pathinfo)
 ```
 
-# Overlap of the CPA of IMIDs vs individual IMIDs
+![Fig_tree_pathways_AID](IMIDs-analyses_files/figure-markdown_github/Fig_tree_pathways_AID.png)
+
+## Overlap of the CPA of IMIDs vs individual IMIDs
 
 In order to get a better overview on which programs and sub-programs of
 CPA are enriched in indyvidual diseases, we calulated a Fisher Exact
@@ -63,9 +96,7 @@ temp_plot
 
 ![](IMIDs-analyses_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
-# UR prediction
-
-# UR enrichment analysis of IMIDs
+## UR enrichment analysis of IMIDs
 
 ``` matlab:code
 clear all
@@ -74,16 +105,14 @@ clc
 warning('off', 'all')
 ```
 
-# Input requirements
-
-### For this analysis we will need:
+### Input requirements
 
 -   The metadata table that summarizes the datasets and where the files
     for each dataset are stored
 -   Gene information
 -   The results from connective pathway analysis
 
-### We can find the files at following locations:
+**We can find the files at following locations:**
 
 ``` matlab:code
 % DEGs
@@ -323,7 +352,9 @@ head(CombinedPval, 5)
 %writetable(CombinedPval,path_output)
 ```
 
-# Load libraries
+## logFC and z-score analyses
+
+### Load libraries
 
 ``` python
 import pandas as pd
@@ -340,7 +371,7 @@ library(cowplot)
 library(ggplot2)
 ```
 
-# Load input
+### Load input files
 
 ``` python
 URs_all_diseases = pd.read_table('../data/UR_analysis/UR_predictions_IMIDs_disease_Pvals.txt', sep = ',')
@@ -354,7 +385,7 @@ path_DEGs = '../data/AllDEGfilesMovedToOneFolder/'
 path_z_scores = '../data/UR_analysis/z_scores/ '
 ```
 
-# Set output paths
+### Set output paths
 
 ``` python
 path_Data_S15 = '../data/UR_analysis/Data S15.xlsx'
@@ -362,7 +393,7 @@ path_URs_logFC = '../data/UR_analysis/UR_IMID_summary_logFC.csv'
 path_URs_zScore = '../data/UR_analysis/UR_IMID_summary_z.csv'
 ```
 
-# Preprocess the data
+### Preprocess the data
 
 ``` python
 # Subset to only P1 and only those URs that are significant in at least 1 disease
@@ -377,6 +408,8 @@ URs_all_diseases = URs_all_diseases.sort_values(by = 'UC_active')
 
 URs_all_diseases.head()
 ```
+
+### Preprocess the files
 
 ``` python
 # Read data. All output of UR_enrichment_DEGs_as_background.m
@@ -403,7 +436,7 @@ Datasets_Noninf.columns = datasets[activity == 'no']
 Datasets_Inf.head()
 ```
 
-# Main analyses
+### logFC analysis
 
 ``` python
 i = 0
@@ -459,6 +492,8 @@ logFC_Noninf = pd.concat(logFC_list, axis = 1)
 logFC_Inf.head()
 ```
 
+### Z score analysis
+
 ``` python
 z_scores_Inf = list()
 i = 0
@@ -480,6 +515,8 @@ z_scores_Noninf = pd.concat(z_scores_Noninf, axis = 1)
 
 z_scores_Inf.head()
 ```
+
+### Prepare the plots
 
 ``` python
 Datasets_Noninf_z_score = Datasets_Noninf.copy()
